@@ -1,101 +1,57 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Sosmed</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-<style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, sans-serif; background: #0a0a0a; color: #fff; padding: 20px; }
- .container { max-width: 1400px; margin: 0 auto; }
-  h1 { font-size: 28px; margin-bottom: 8px; }
- .subtitle { color: #666; font-size: 14px; margin-bottom: 20px; }
- .filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
- .filters select,.filters input { background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 8px 12px; border-radius: 6px; }
- .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
- .kpi { background: #1a1a1a; padding: 20px; border-radius: 8px; border: 1px solid #333; }
- .kpi-label { font-size: 12px; color: #888; margin-bottom: 8px; }
- .kpi-value { font-size: 32px; font-weight: 700; }
- .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 16px; margin-bottom: 24px; }
- .chart-box { background: #1a1a1a; padding: 20px; border-radius: 8px; border: 1px solid #333; }
- .chart-title { font-size: 14px; margin-bottom: 12px; color: #aaa; }
-  table { width: 100%; background: #1a1a1a; border-collapse: collapse; border-radius: 8px; overflow: hidden; }
-  th, td { padding: 12px; text-align: left; border-bottom: 1px solid #333; font-size: 14px; }
-  th { background: #222; color: #aaa; font-weight: 600; }
-</style>
-</head>
-<body>
-<div class="container">
-  <h1>Dashboard Sosmed</h1>
-  <div class="subtitle" id="status">Loading...</div>
-
-  <div class="filters">
-    <input type="date" id="startDate">
-    <input type="date" id="endDate">
-    <select id="brandFilter"><option value="">Semua Brand</option></select>
-  </div>
-
-  <div class="kpis">
-    <div class="kpi"><div class="kpi-label">Total Followers</div><div class="kpi-value" id="kpiFollowers">0</div></div>
-    <div class="kpi"><div class="kpi-label">Total Reach</div><div class="kpi-value" id="kpiReach">0</div></div>
-    <div class="kpi"><div class="kpi-label">Total Engagement</div><div class="kpi-value" id="kpiEng">0</div></div>
-    <div class="kpi"><div class="kpi-label">Total Data</div><div class="kpi-value" id="kpiPosts">0</div></div>
-  </div>
-
-  <div class="charts">
-    <div class="chart-box"><div class="chart-title">Followers by Brand (Latest)</div><canvas id="chartBrand"></canvas></div>
-    <div class="chart-box"><div class="chart-title">Reach by Brand (Latest)</div><canvas id="chartReach"></canvas></div>
-  </div>
-
-  <table>
-    <thead><tr>
-      <th>Waktu Push</th><th>Brand</th><th>Periode</th><th>Reach</th><th>Engagement</th><th>Followers</th>
-    </tr></thead>
-    <tbody id="tableBody"></tbody>
-  </table>
-</div>
-
 <script>
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAEUueYms0SnC-JXracRWmYLZ55VqptcgNGGpAWpnMqIQU7oFhd8KWO4ZXr85ZzOLvfBQX0I9aLEHr/pub?gid=269503424&single=true&output=csv';
-
 let allData = [];
 let charts = {};
 
 function toNum(v) {
   if (!v) return 0;
   let s = String(v).trim();
-  if (s === '—' || s === '-' || s === '') return 0;
-  s = s.replace(/[^\d]/g, ''); // buang titik, koma, tulisan akun
+  if (s === '—' || s === '-' || s.toLowerCase() === 'tidak ada' || s === '') return 0;
+  // Hapus titik ribu dan teks, contoh: 245.881 akun -> 245881
+  s = s.split('(')[0]; // buang "(tidak ditemukan...)"
+  s = s.replace(/[^\d]/g, '');
   return parseInt(s) || 0;
 }
-
 function formatNum(n) {
   if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
   if (n >= 1e3) return (n/1e3).toFixed(1)+'K';
   return n.toLocaleString('id-ID');
 }
-
+function normalizeBrand(b) {
+  b = b.trim().toLowerCase();
+  if (b.includes('sedjati eco')) return 'SEF';
+  if (b.includes('labbaik')) return 'Labbaik Chicken';
+  if (b.includes('waydee')) return 'Waydee';
+  if (b.includes('sedjati coffee')) return 'Sedjati Coffee';
+  if (b.includes('luqman') || b === 'lh') return 'LH';
+  if (b.includes('baso')) return 'Baso Kajojo';
+  if (b.includes('spud')) return 'Spud Potata';
+  if (b.includes('obie')) return 'Obie Donat';
+  if (b === 'ofc') return 'OFC';
+  return b.toUpperCase();
+}
 async function loadData() {
   try {
     const res = await fetch(CSV_URL);
     const csv = await res.text();
     const parsed = Papa.parse(csv, { header: true, skipEmptyLines: 'greedy' });
-
     allData = parsed.data.map(r => {
-      // header ada spasi: "Brand " -> trim
       const brandKey = Object.keys(r).find(k => k.trim().toLowerCase() === 'brand') || 'Brand';
+      const rawBrand = (r[brandKey] || '').trim();
       return {
-        waktu: r['Waktu Push'] || r['Waktu'] || '',
-        brand: (r[brandKey] || '').trim(),
+        waktu: r['Waktu Push'] || '',
+        brandRaw: rawBrand,
+        brand: normalizeBrand(rawBrand),
         periode: r['Periode'] || '',
         reach: toNum(r['Reach']),
         engagement: toNum(r['Engagement']),
         followers: toNum(r['Followers']),
         reachRaw: r['Reach'] || '',
       };
-    }).filter(r => r.brand);
+    }).filter(r => r.brandRaw);
+
+    // Urutkan by waktu
+    allData.sort((a,b) => a.waktu > b.waktu? 1 : -1);
 
     updateBrands();
     updateView();
@@ -104,22 +60,18 @@ async function loadData() {
     document.getElementById('status').textContent = 'Error: ' + e;
   }
 }
-
 function updateBrands() {
   const brands = [...new Set(allData.map(r => r.brand))].sort();
   document.getElementById('brandFilter').innerHTML = '<option value="">Semua Brand</option>' +
     brands.map(b => `<option value="${b}">${b}</option>`).join('');
 }
-
 function parseDateFromWaktu(w) {
-  // format 07/07/2026 18:55:33 -> 2026-07-07
   try {
-    const d = w.split(' ')[0]; // 07/07/2026
+    const d = w.split(' ')[0];
     const [day, month, year] = d.split('/');
     return `${year}-${month}-${day}`;
   } catch { return '' }
 }
-
 function getFiltered() {
   const sDate = document.getElementById('startDate').value;
   const eDate = document.getElementById('endDate').value;
@@ -132,18 +84,26 @@ function getFiltered() {
     return true;
   });
 }
-
 function updateView() {
   const data = getFiltered();
+  // Ambil latest YANG ADA ANGKA, bukan yang 0
   const latest = {};
-  data.forEach(r => {
-    if (!latest[r.brand] || r.waktu > latest[r.brand].waktu) latest[r.brand] = r;
+  [...data].reverse().forEach(r => {
+    if (!latest[r.brand]) {
+      latest[r.brand] = r;
+    } else {
+      // kalau yang sudah kesimpen 0, ganti kalau yang baru ada angka
+      if ((latest[r.brand].followers === 0 && r.followers > 0) ||
+          (latest[r.brand].reach === 0 && r.reach > 0)) {
+        latest[r.brand] = r;
+      }
+    }
   });
   const latestArr = Object.values(latest);
 
   document.getElementById('kpiFollowers').textContent = formatNum(latestArr.reduce((s,r) => s + r.followers, 0));
   document.getElementById('kpiReach').textContent = formatNum(latestArr.reduce((s,r) => s + r.reach, 0));
-  document.getElementById('kpiEng').textContent = formatNum(data.reduce((s,r) => s + r.engagement, 0));
+  document.getElementById('kpiEng').textContent = formatNum(latestArr.reduce((s,r) => s + r.engagement, 0));
   document.getElementById('kpiPosts').textContent = data.length;
 
   const byFollowers = {};
@@ -157,11 +117,10 @@ function updateView() {
   document.getElementById('tableBody').innerHTML = data.slice().reverse().slice(0, 100).map(r => `
     <tr>
       <td>${r.waktu}</td><td>${r.brand}</td><td>${r.periode}</td>
-      <td>${r.reachRaw || r.reach}</td><td>${r.engagement}</td><td>${r.followers}</td>
+      <td>${r.reachRaw || r.reach}</td><td>${r.engagement || 0}</td><td>${r.followers || 0}</td>
     </tr>
   `).join('');
 }
-
 function drawChart(id, labels, data) {
   if (charts[id]) charts[id].destroy();
   charts[id] = new Chart(document.getElementById(id), {
@@ -177,13 +136,9 @@ function drawChart(id, labels, data) {
     }
   });
 }
-
 ['startDate','endDate','brandFilter'].forEach(id => {
   document.getElementById(id).addEventListener('change', updateView);
 });
-
 loadData();
 setInterval(loadData, 60000);
 </script>
-</body>
-</html>
