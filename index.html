@@ -322,7 +322,16 @@ function copyReport(){
  navigator.clipboard.writeText(text).then(()=>{ alert('Laporan tercopy!'); });
 }
 
-['startDate','endDate','brandFilter','platformFilter'].forEach(id=> document.getElementById(id).addEventListener('change',updateView));
+['startDate','endDate','brandFilter','platformFilter'].forEach(id=> document.getElementById(id).addEventListener('change',()=>{ currentPage=1; updateView(); }));
+// ENTER untuk Generate Laporan
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='Enter'){
+    document.getElementById('btnGenerate').click();
+  }
+});
+document.getElementById('reportModal').addEventListener('click', (e)=>{
+  if(e.target.id==='reportModal') closeModal();
+});
 loadData(); setInterval(loadData,60000);
 </script>
 </body>
