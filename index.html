@@ -3,73 +3,77 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Sosmed - IG Insight Fix</title>
+<title>Dashboard Sosmed - Detail Metrics</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,sans-serif;background:#0a0a0a;color:#fff;padding:20px}
-.container{max-width:1600px;margin:0 auto}
-h1{font-size:26px;margin-bottom:6px}
-.subtitle{color:#4caf50;font-size:12px;margin-bottom:14px;line-height:1.5}
-.filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
-.filters select,.filters input,.btn{background:#1a1a1a;border:1px solid #333;color:#fff;padding:7px 11px;border-radius:6px;font-size:12px;cursor:pointer}
-.btn{background:#4a9eff;color:#fff;border:none;font-weight:600;padding:8px 16px}
+body{font-family:-apple-system,sans-serif;background:#0a0a0a;color:#fff;padding:16px}
+.container{max-width:1800px;margin:0 auto}
+h1{font-size:24px;margin-bottom:4px}
+.subtitle{color:#4caf50;font-size:11px;margin-bottom:12px;line-height:1.4}
+.filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.filters select,.filters input,.btn{background:#1a1a1a;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer}
+.btn{background:#4a9eff;color:#fff;border:none;font-weight:600;padding:7px 14px}
 .btn-green{background:#4caf50}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:16px}
-.kpi{background:#1a1a1a;padding:12px;border-radius:8px;border:1px solid #333}
-.kpi-label{font-size:10px;color:#888;margin-bottom:4px;text-transform:uppercase}
-.kpi-value{font-size:20px;font-weight:700}
-.kpi-sub{font-size:10px;color:#666;margin-top:2px}
-.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;margin-bottom:16px}
-.chart-box{background:#1a1a1a;padding:14px;border-radius:8px;border:1px solid #333}
-.chart-title{font-size:12px;margin-bottom:8px;color:#aaa}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:12px}
+.kpi{background:#1a1a1a;padding:10px;border-radius:8px;border:1px solid #333}
+.kpi-label{font-size:9px;color:#888;margin-bottom:4px;text-transform:uppercase}
+.kpi-value{font-size:18px;font-weight:700}
+.kpi-sub{font-size:9px;color:#666}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px;margin-bottom:12px}
+.chart-box{background:#1a1a1a;padding:12px;border-radius:8px;border:1px solid #333}
+.chart-title{font-size:11px;margin-bottom:6px;color:#aaa}
 .table-wrap{background:#1a1a1a;border-radius:8px;border:1px solid #333;overflow:hidden}
-.table-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #333}
-.table-scroll{max-height:420px;overflow:auto}
-table{width:100%;border-collapse:collapse;font-size:11px}
-th,td{padding:7px 9px;text-align:left;border-bottom:1px solid #2a2a2a;white-space:nowrap}
-th{background:#222;color:#aaa;position:sticky;top:0;z-index:2}
-.badge{padding:1px 5px;border-radius:3px;font-size:10px;border:1px solid #333;background:#222}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
-.modal.show{display:flex}
-.modal-content{background:#1a1a1a;border:1px solid #333;border-radius:10px;padding:20px;max-width:800px;width:100%;max-height:85vh;overflow:auto}
-pre{background:#0a0a0a;padding:12px;border-radius:6px;border:1px solid #333;font-size:11px;white-space:pre-wrap;color:#ccc}
+.table-header{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #333}
+.table-scroll{max-height:400px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:10px}
+th,td{padding:6px 8px;text-align:left;border-bottom:1px solid #2a2a2a;white-space:nowrap}
+th{background:#222;color:#aaa;position:sticky;top:0;z-index:2;font-size:10px}
+.badge{padding:1px 5px;border-radius:3px;font-size:9px;border:1px solid #333;background:#222}
+.badge-ig{background:#833AB4;color:#fff}
+.badge-tiktok{background:#000;color:#fff}
 </style>
 </head>
 <body>
 <div class="container">
-<h1>Dashboard Sosmed <span style="font-size:13px;color:#888">- IG Insight Fix</span></h1>
-<div class="subtitle" id="status">Loading... Mencoba 3 sumber Sheet...</div>
+<h1>Dashboard Sosmed <span style="font-size:12px;color:#888">- Detail Metrics (Engagement | views | like | Comments | Saved | Shares)</span></h1>
+<div class="subtitle" id="status">Loading...</div>
 <div class="filters">
 <input type="date" id="startDate"><input type="date" id="endDate">
 <select id="brandFilter"><option value="">Semua Brand</option></select>
 <select id="platformFilter"><option value="">Semua Platform</option><option value="IG">IG</option><option value="TikTok">TikTok</option></select>
 <button class="btn btn-green" id="btnGenerate">⚡ Generate Laporan Real</button>
 </div>
+
 <div class="kpis">
-<div class="kpi"><div class="kpi-label">Tayangan</div><div class="kpi-value" id="kpiTayangan">0</div></div>
-<div class="kpi"><div class="kpi-label">Jangkauan</div><div class="kpi-value" id="kpiJangkauan">0</div></div>
-<div class="kpi"><div class="kpi-label">Interaksi</div><div class="kpi-value" id="kpiInteraksi">0</div><div class="kpi-sub" id="kpiERSub"></div></div>
-<div class="kpi"><div class="kpi-label">Kunjungan</div><div class="kpi-value" id="kpiKunjungan">0</div></div>
-<div class="kpi"><div class="kpi-label">Pengikut</div><div class="kpi-value" id="kpiPengikut">0</div></div>
-<div class="kpi"><div class="kpi-label">Klik Tautan</div><div class="kpi-value" id="kpiKlik">0</div></div>
-<div class="kpi"><div class="kpi-label">AVG ER</div><div class="kpi-value" id="kpiER">0%</div></div>
-<div class="kpi"><div class="kpi-label">Total Baris</div><div class="kpi-value" id="kpiPosts">0</div></div>
+<div class="kpi"><div class="kpi-label">Views</div><div class="kpi-value" id="kpiViews">0</div></div>
+<div class="kpi"><div class="kpi-label">Like</div><div class="kpi-value" id="kpiLike">0</div></div>
+<div class="kpi"><div class="kpi-label">Comments</div><div class="kpi-value" id="kpiComments">0</div></div>
+<div class="kpi"><div class="kpi-label">Saved</div><div class="kpi-value" id="kpiSaved">0</div></div>
+<div class="kpi"><div class="kpi-label">Shares</div><div class="kpi-value" id="kpiShares">0</div></div>
+<div class="kpi"><div class="kpi-label">Interaction</div><div class="kpi-value" id="kpiInteraction">0</div></div>
+<div class="kpi"><div class="kpi-label">Avg Engagement %</div><div class="kpi-value" id="kpiEngagement">0%</div></div>
+<div class="kpi"><div class="kpi-label">Follower</div><div class="kpi-value" id="kpiFollower">0</div></div>
+<div class="kpi"><div class="kpi-label">Profile Visit</div><div class="kpi-value" id="kpiProfile">0</div></div>
+<div class="kpi"><div class="kpi-label">Total Data</div><div class="kpi-value" id="kpiPosts">0</div></div>
 </div>
+
 <div class="charts">
-<div class="chart-box"><div class="chart-title">Tayangan by Brand</div><canvas id="chartTayangan"></canvas></div>
-<div class="chart-box"><div class="chart-title">Jangkauan by Brand</div><canvas id="chartJangkauan"></canvas></div>
-<div class="chart-box"><div class="chart-title">Interaksi by Brand</div><canvas id="chartInteraksi"></canvas></div>
-<div class="chart-box"><div class="chart-title">ER by Brand (%)</div><canvas id="chartER"></canvas></div>
+<div class="chart-box"><div class="chart-title">Views by Brand</div><canvas id="chartViews"></canvas></div>
+<div class="chart-box"><div class="chart-title">Interaction by Brand</div><canvas id="chartInteraction"></canvas></div>
+<div class="chart-box"><div class="chart-title">Engagement % by Brand</div><canvas id="chartEng"></canvas></div>
+<div class="chart-box"><div class="chart-title">Like / Comments / Saved / Shares</div><canvas id="chartEngDetail"></canvas></div>
+<div class="chart-box"><div class="chart-title">Follower by Brand</div><canvas id="chartFollower"></canvas></div>
 </div>
+
 <div class="table-wrap">
-<div class="table-header"><h3>Detail IG Insight (10 / halaman)</h3><div id="tableInfo" style="font-size:10px;color:#666"></div></div>
-<div class="table-scroll" id="tableScroll"><table><thead><tr><th>Waktu Push</th><th>Brand Asli</th><th>Brand Group</th><th>Platform</th><th>Periode</th><th>Tayangan</th><th>Jangkauan</th><th>Interaksi</th><th>Klik</th><th>Kunjungan</th><th>Pengikut</th><th>ER%</th></tr></thead><tbody id="tableBody"></tbody></table></div>
-<div style="padding:8px 14px;border-top:1px solid #333;display:flex;gap:6px;flex-wrap:wrap" id="pagination"></div>
+<div class="table-header"><h3 style="font-size:11px">Detail - Sesuai Tabel (10 / halaman) | Scroll kanan-kiri untuk semua kolom</h3><div id="tableInfo" style="font-size:10px;color:#666"></div></div>
+<div class="table-scroll" id="tableScroll"><table><thead><tr><th>Waktu Push</th><th>Brand Asli</th><th>Brand Group</th><th>Platform</th><th>Periode</th><th>Engagement %</th><th>Interaction</th><th>views</th><th>like</th><th>Comments</th><th>Saved</th><th>Shares</th><th>Reel</th><th>Follower</th><th>Profile</th></tr></thead><tbody id="tableBody"></tbody></table></div>
+<div style="padding:8px 12px;border-top:1px solid #333;display:flex;gap:6px;flex-wrap:wrap" id="pagination"></div>
 </div>
 </div>
-<div class="modal" id="reportModal"><div class="modal-content"><h2>Laporan Real</h2><pre id="reportText"></pre><div style="display:flex;gap:8px;margin-top:10px"><button class="btn" onclick="copyReport()">Copy</button><button class="btn" style="background:#333" onclick="closeModal()">Tutup</button></div></div></div>
+
 <script>
 const CSV_URLS=[
   'https://docs.google.com/spreadsheets/d/1YGJg7u99C_kcaurxmt09T5CKR5tUPGHKbmLtz2WB4IE/export?format=csv&gid=269503424',
@@ -78,114 +82,102 @@ const CSV_URLS=[
 ];
 let allData=[], charts={}, currentPage=1, pageSize=10;
 
-function toNum(v){
+function toInt(v){
  if(v==null) return 0;
  let s=String(v).trim();
  if(s===''||s==='—'||s==='-'||s==='–') return 0;
- s=s.toLowerCase();
- // handle "1,4 rb" -> 1400, "1 rb" -> 1000
- if(s.includes('rb')||s.includes('k')){
-   let num=parseFloat(s.replace(',','.').replace(/[^0-9.]/g,''));
-   if(!isNaN(num)) return Math.round(num*1000);
- }
- // normal: "1.339" -> 1339, "1.077 per Reels" -> 1077, "245.881 akun" -> 245881
+ // handle "1.339" "3.055" "1.057" "3.477" as thousand
+ // also "3.05" for engagement will be handled separately
+ s=s.replace(',','.').replace(/[^0-9.]/g,'');
+ // if has dot and length >1, treat dot as thousand if more than 2 digits after? Simple: remove all dots for count metrics
  let digits=s.replace(/[^0-9]/g,'');
  return digits ? parseInt(digits,10) : 0;
 }
+function toFloatEng(v){
+ if(v==null) return 0;
+ let s=String(v).trim().replace(',','.');
+ if(s===''||s==='—') return 0;
+ let num=parseFloat(s.replace(/[^0-9.]/g,''));
+ return isNaN(num)?0:num;
+}
 function formatNum(n){ if(n>=1e6) return (n/1e6).toFixed(2)+'M'; if(n>=1e3) return (n/1e3).toFixed(1)+'K'; return n.toLocaleString('id-ID'); }
-function calcER(i,j){ if(!j||!i) return 0; return i/j*100; }
-function formatPercent(v){ if(v>=10) return v.toFixed(1)+'%'; if(v>=1) return v.toFixed(2)+'%'; if(v>0) return v.toFixed(3)+'%'; return '—'; }
 
 function parseBrandAndPlatform(rawBrand, rawPlatform){
- let brand = String(rawBrand||'').trim();
- let platform = String(rawPlatform||'').trim();
- // Jika user ngetik "Sedjati EcoFarm IG" di kolom Brand, pisahkan
- const parts = brand.split(/\s+/);
- const last = parts[parts.length-1].toUpperCase();
- if(['IG','TIKTOK','TT','YT','YOUTUBE','FB','FACEBOOK','THREADS'].includes(last)){
-   platform = last;
-   brand = parts.slice(0,-1).join(' ');
+ let brand=String(rawBrand||'').trim();
+ let platform=String(rawPlatform||'').trim();
+ // Handle "Sedjati EcoFarm IG" in one cell
+ const parts=brand.split(/\s+/);
+ const last=parts[parts.length-1].toUpperCase();
+ if(['IG','TIKTOK','TT','YT','YOUTUBE','FB','THREADS'].includes(last)){
+   if(!platform) platform=last;
+   brand=parts.slice(0,-1).join(' ');
  }
  // Normalize platform
- let pLower = platform.toLowerCase();
- if(pLower.includes('ig')||pLower.includes('insta')) platform='IG';
- else if(pLower.includes('tiktok')||pLower==='tt') platform='TikTok';
- else if(pLower.includes('thread')) platform='Threads';
- else if(pLower.includes('yt')||pLower.includes('you')) platform='YouTube';
- else if(pLower.includes('fb')||pLower.includes('face')) platform='Facebook';
- else if(platform==='') platform='—';
- // Normalize brand
- let bLower = brand.toLowerCase();
+ let pLow=platform.toLowerCase();
+ if(pLow.includes('ig')) platform='IG';
+ else if(pLow.includes('tiktok')||pLow==='tt') platform='TikTok';
+ else if(pLow) platform=platform.toUpperCase();
+ else platform='—';
+ // Normalize brand group
+ let bLow=brand.toLowerCase();
  let group='';
- if(bLower.includes('labbaik')) group='Labbaik Chicken';
- else if(bLower==='ofc'||bLower.includes('oven')) group='OFC';
- else if(bLower.includes('sedjati eco')||bLower==='sef') group='SEF';
- else if(bLower.includes('petani')||bLower==='psm') group='PSM';
- else if(bLower.includes('sedjati coffee')||bLower.includes('sedjati cofee')||bLower==='sedjati'|| (bLower.includes('sedjati')&&!bLower.includes('eco'))) group='Sedjati Coffee';
- else if(bLower.includes('baso')||bLower.includes('kajojo')) group='Baso Kajojo';
- else if(bLower.includes('spud')) group='Spud Potata';
- else if(bLower.includes('obie')||bLower.includes('donat')||bLower.includes('donut')) group='Obie Donat';
- else if(bLower.includes('waydee')) group='Waydee';
- else if(bLower.includes('luqman')||bLower==='lh') group='Luqman Hakim';
+ if(bLow.includes('labbaik')) group='Labbaik Chicken';
+ else if(bLow==='ofc'||bLow.includes('oven')) group='OFC';
+ else if(bLow.includes('sedjati eco')||bLow==='sef'|| (bLow.includes('eco')&&bLow.includes('farm'))) group='SEF';
+ else if(bLow.includes('petani')||bLow==='psm') group='PSM';
+ else if(bLow.includes('sedjati')) group='Sedjati Coffee';
+ else if(bLow.includes('baso')||bLow.includes('kajojo')) group='Baso Kajojo';
+ else if(bLow.includes('spud')) group='Spud Potata';
+ else if(bLow.includes('obie')||bLow.includes('donat')||bLow.includes('donut')) group='Obie Donat';
+ else if(bLow.includes('waydee')) group='Waydee';
+ else if(bLow.includes('luqman')||bLow==='lh') group='Luqman Hakim';
  else group=brand.toUpperCase();
- return {brandRaw: brand, brandGroup: group, platform};
+ return {brandRaw:brand, brandGroup:group, platform};
 }
 
 async function loadData(){
- let lastError='';
  for(let url of CSV_URLS){
   try{
-   document.getElementById('status').textContent='Fetching: '+url.substring(0,80)+'...';
-   const res=await fetch(url);
-   if(!res.ok) throw new Error('HTTP '+res.status);
+   document.getElementById('status').textContent='Fetching '+url.substring(0,60)+'...';
+   const res=await fetch(url); if(!res.ok) throw new Error('HTTP '+res.status);
    const csv=await res.text();
-   if(csv.length<10) throw new Error('CSV kosong');
    const parsed=Papa.parse(csv,{header:true,skipEmptyLines:'greedy',trimHeader:true});
-   if(!parsed.data || parsed.data.length===0) throw new Error('No data');
    const rows=parsed.data.map(r=>{ const c={}; Object.keys(r).forEach(k=> c[k.trim()]=r[k]); return c; });
-   // detect header names
-   const sampleKeys=Object.keys(rows[0]||{}).join(', ');
    allData=rows.map(r=>{
-     const waktu=(r['Waktu Push']||r['ush']||r['Waktu']||'').toString().trim();
-     const brandRawOrig=(r['Brand']||'').toString().trim();
+     const waktu=(r['Waktu Push']||'').toString().trim();
+     const brandOrig=(r['Brand']||'').toString().trim();
      const platOrig=(r['Platform']||'').toString().trim();
-     if(!brandRawOrig) return null;
-     const {brandRaw, brandGroup, platform}=parseBrandAndPlatform(brandRawOrig, platOrig);
+     if(!brandOrig) return null;
+     const {brandRaw, brandGroup, platform}=parseBrandAndPlatform(brandOrig, platOrig);
      const periode=(r['Periode']||'').toString().trim();
-     const tayangan=toNum(r['Tayangan']||r['Reach']||'');
-     const jangkauan=toNum(r['Jangkauan']||r['Reach']||'');
-     const interaksi=toNum(r['Interaksi']||r['Engagement']||'');
-     const klik=toNum(r['Klik Tautan']||r['Klik']||'');
-     const kunjungan=toNum(r['Kunjungan']||'');
-     const pengikut=toNum(r['Pengikut']||r['Followers']||'');
-     return {
-       waktu, brandRaw, brand: brandGroup, platform, platformRaw: platOrig||platform,
-       periode,
-       tayangan, tayanganRaw:(r['Tayangan']||'').toString(),
-       jangkauan, jangkauanRaw:(r['Jangkauan']||'').toString(),
-       interaksi, interaksiRaw:(r['Interaksi']||'').toString(),
-       klik, klikRaw:(r['Klik Tautan']||'').toString(),
-       kunjungan, kunjunganRaw:(r['Kunjungan']||'').toString(),
-       pengikut, pengikutRaw:(r['Pengikut']||'').toString(),
-     };
+     // New columns from screenshot
+     const engagement=toFloatEng(r['Engagement']||'');
+     const interaction=toInt(r['Interaction']||r['Interaksi']||'');
+     const views=toInt(r['views']||r['Views']||r['Tayangan']||'');
+     const like=toInt(r['like']||r['Like']||'');
+     const comments=toInt(r['Comments']||r['comments']||'');
+     const saved=toInt(r['Saved']||r['saved']||'');
+     const shares=toInt(r['Shares']||r['shares']||'');
+     const reel=toInt(r['Reel']||r['reel']||'');
+     const follower=toInt(r['Follower']||r['follower']||r['Pengikut']||r['Followers']||'');
+     const profile=toInt(r['Profile']||r['profile']||r['Kunjungan']||'');
+     return {waktu, brandRaw, brand:brandGroup, platform, periode, engagement, interaction, views, like, comments, saved, shares, reel, follower, profile,
+       raw:{engagement:r['Engagement'], interaction:r['Interaction'], views:r['views'], like:r['like'], comments:r['Comments'], saved:r['Saved'], shares:r['Shares'], reel:r['Reel'], follower:r['Follower'], profile:r['Profile']}};
    }).filter(Boolean);
-   if(allData.length===0) throw new Error('Hasil parse 0 baris');
+   if(allData.length===0) throw new Error('0 rows');
    allData.sort((a,b)=> a.waktu.localeCompare(b.waktu));
    updateBrands(); updateView();
-   document.getElementById('status').textContent=`OK - ${allData.length} baris dari ${url.includes('1YGJg')?'Sheet BARU (1YGJg...)':'Sheet LAMA'} | Kolom: ${sampleKeys} | Brand: ${[...new Set(allData.map(x=>x.brand))].join(', ')}`;
+   document.getElementById('status').textContent=`OK - ${allData.length} baris | Brand: ${[...new Set(allData.map(x=>x.brand))].join(', ')} | Sumber: ${url.includes('1YGJg')?'Sheet BARU':'Sheet LAMA'}`;
    return;
-  }catch(e){ lastError=e.message; console.log('fail',url,e); }
+  }catch(e){ console.log('fail',e); }
  }
- document.getElementById('status').textContent='Gagal semua sumber: '+lastError+' - Pastikan Sheet di-publish: File > Share > Publish to web > Link, Entire Document, CSV';
+ document.getElementById('status').textContent='Gagal load - Publish Sheet: File > Share > Publish to web > CSV';
 }
-
 function updateBrands(){
  const brands=[...new Set(allData.map(r=>r.brand))].sort();
  document.getElementById('brandFilter').innerHTML='<option value="">Semua Brand</option>'+brands.map(b=>`<option value="${b}">${b}</option>`).join('');
- const plats=[...new Set(allData.map(r=>r.platform).filter(p=>p && p!=='—'))].sort();
- if(plats.length>0){
-   document.getElementById('platformFilter').innerHTML='<option value="">Semua Platform</option>'+plats.map(p=>`<option value="${p}">${p}</option>`).join('');
- }
+ const plats=[...new Set(allData.map(r=>r.platform).filter(p=>p!=='—'))].sort();
+ if(plats.length) document.getElementById('platformFilter').innerHTML='<option value="">Semua Platform</option>'+plats.map(p=>`<option value="${p}">${p}</option>`).join('');
 }
 function parseDate(w){ try{ const d=w.split(' ')[0]; const [day,m,y]=d.split('/'); return `${y}-${m}-${day}`;}catch{return ''} }
 function getFiltered(){
@@ -197,8 +189,8 @@ function getFiltered(){
   const rd=parseDate(r.waktu);
   if(sDate&&rd&&rd<sDate) return false;
   if(eDate&&rd&&rd>eDate) return false;
-  if(brand && r.brand!==brand) return false;
-  if(plat && r.platform!==plat) return false;
+  if(brand&&r.brand!==brand) return false;
+  if(plat&&r.platform!==plat) return false;
   return true;
  });
 }
@@ -206,30 +198,52 @@ function updateView(){
  currentPage=1;
  const data=getFiltered();
  const grouped={};
- data.forEach(r=>{ const k=r.brand; if(!grouped[k]) grouped[k]=[]; grouped[k].push(r); });
+ data.forEach(r=>{ if(!grouped[r.brand]) grouped[r.brand]=[]; grouped[r.brand].push(r); });
  const latestMap={};
  Object.keys(grouped).forEach(k=>{
   const arr=grouped[k].slice().reverse();
-  latestMap[k]={ brand:k, tayangan:arr.find(x=>x.tayangan>0)?.tayangan||0, jangkauan:arr.find(x=>x.jangkauan>0)?.jangkauan||0, interaksi:arr.find(x=>x.interaksi>0)?.interaksi||0, klik:arr.find(x=>x.klik>0)?.klik||0, kunjungan:arr.find(x=>x.kunjungan>0)?.kunjungan||0, pengikut:arr.find(x=>x.pengikut>0)?.pengikut||0 };
+  const sum=(key)=> arr.reduce((s,x)=>s+(x[key]||0),0);
+  const avgEng=arr.length? arr.reduce((s,x)=>s+x.engagement,0)/arr.length : 0;
+  latestMap[k]={ brand:k, views:sum('views'), like:sum('like'), comments:sum('comments'), saved:sum('saved'), shares:sum('shares'), interaction:sum('interaction'), follower:arr.find(x=>x.follower>0)?.follower||0, profile:sum('profile'), engagement:avgEng };
  });
  const latestArr=Object.values(latestMap);
- const sum=k=> latestArr.reduce((s,r)=>s+r[k],0);
- document.getElementById('kpiTayangan').textContent=formatNum(sum('tayangan'));
- document.getElementById('kpiJangkauan').textContent=formatNum(sum('jangkauan'));
- document.getElementById('kpiInteraksi').textContent=formatNum(sum('interaksi'));
- document.getElementById('kpiKunjungan').textContent=formatNum(sum('kunjungan'));
- document.getElementById('kpiPengikut').textContent=formatNum(sum('pengikut'));
- document.getElementById('kpiKlik').textContent=formatNum(sum('klik'));
- document.getElementById('kpiER').textContent=formatPercent(calcER(sum('interaksi'),sum('jangkauan')));
- document.getElementById('kpiERSub').textContent=formatPercent(calcER(sum('interaksi'),sum('jangkauan')));
+ const sumAll=(k)=> latestArr.reduce((s,r)=>s+r[k],0);
+ document.getElementById('kpiViews').textContent=formatNum(sumAll('views'));
+ document.getElementById('kpiLike').textContent=formatNum(sumAll('like'));
+ document.getElementById('kpiComments').textContent=formatNum(sumAll('comments'));
+ document.getElementById('kpiSaved').textContent=formatNum(sumAll('saved'));
+ document.getElementById('kpiShares').textContent=formatNum(sumAll('shares'));
+ document.getElementById('kpiInteraction').textContent=formatNum(sumAll('interaction'));
+ document.getElementById('kpiEngagement').textContent=(latestArr.length? (sumAll('engagement')/latestArr.length).toFixed(2) : '0')+'%';
+ document.getElementById('kpiFollower').textContent=formatNum(sumAll('follower'));
+ document.getElementById('kpiProfile').textContent=formatNum(sumAll('profile'));
  document.getElementById('kpiPosts').textContent=data.length;
- const by=k=>{ const o={}; latestArr.forEach(r=>o[r.brand]=r[k]); return o; };
- drawChart('chartTayangan',Object.keys(by('tayangan')),Object.values(by('tayangan')));
- drawChart('chartJangkauan',Object.keys(by('jangkauan')),Object.values(by('jangkauan')));
- drawChart('chartInteraksi',Object.keys(by('interaksi')),Object.values(by('interaksi')));
- const erM={}; latestArr.forEach(r=>erM[r.brand]=calcER(r.interaksi,r.jangkauan));
- drawChart('chartER',Object.keys(erM),Object.values(erM),true);
+ const by=(k)=>{ const o={}; latestArr.forEach(r=>o[r.brand]=r[k]); return o; };
+ drawChart('chartViews',Object.keys(by('views')),Object.values(by('views')));
+ drawChart('chartInteraction',Object.keys(by('interaction')),Object.values(by('interaction')));
+ drawChart('chartEng',Object.keys(by('engagement')),Object.values(by('engagement')),true);
+ drawChart('chartFollower',Object.keys(by('follower')),Object.values(by('follower')));
+ // stacked like/comments/saved/shares
+ drawStacked();
  renderTable();
+}
+function drawChart(id,labels,data,isPercent=false){
+ if(charts[id]) charts[id].destroy();
+ const colors={chartViews:'#4a9eff',chartInteraction:'#9c27b0',chartEng:'#4caf50',chartFollower:'#ff9800'};
+ charts[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:[{data,backgroundColor:colors[id]||'#4a9eff'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#888',maxRotation:30},grid:{color:'#222'}},y:{ticks:{color:'#888',callback:v=> isPercent? v+'%' : formatNum(v)},grid:{color:'#222'}}}}});
+}
+function drawStacked(){
+ if(charts['chartEngDetail']) charts['chartEngDetail'].destroy();
+ const data=getFiltered();
+ const grouped={};
+ data.forEach(r=>{ if(!grouped[r.brand]) grouped[r.brand]=[]; grouped[r.brand].push(r); });
+ const brands=Object.keys(grouped);
+ const sum=(arr,k)=> arr.reduce((s,x)=>s+x[k],0);
+ const likeData=brands.map(b=> sum(grouped[b],'like'));
+ const commData=brands.map(b=> sum(grouped[b],'comments'));
+ const savedData=brands.map(b=> sum(grouped[b],'saved'));
+ const sharesData=brands.map(b=> sum(grouped[b],'shares'));
+ charts['chartEngDetail']=new Chart(document.getElementById('chartEngDetail'),{type:'bar',data:{labels:brands,datasets:[{label:'like',data:likeData,backgroundColor:'#e91e63'},{label:'comments',data:commData,backgroundColor:'#2196f3'},{label:'saved',data:savedData,backgroundColor:'#4caf50'},{label:'shares',data:sharesData,backgroundColor:'#ff9800'}]},options:{responsive:true,plugins:{legend:{display:true,labels:{color:'#888',font:{size:10}}}},scales:{x:{stacked:true,ticks:{color:'#888'},grid:{color:'#222'}},y:{stacked:true,ticks:{color:'#888'},grid:{color:'#222'}}}}});
 }
 function renderTable(){
  const data=getFiltered().slice().reverse();
@@ -238,40 +252,25 @@ function renderTable(){
  const start=(currentPage-1)*pageSize; const end=Math.min(start+pageSize,total);
  const pageData=data.slice(start,end);
  document.getElementById('tableInfo').textContent=`${total?start+1:0}-${end} dari ${total} (hal ${currentPage}/${totalPages||1})`;
- document.getElementById('tableBody').innerHTML=pageData.map(r=>{
-  const er=calcER(r.interaksi,r.jangkauan);
-  return `<tr><td>${r.waktu}</td><td>${r.brandRaw}</td><td><span class="badge">${r.brand}</span></td><td>${r.platform}</td><td>${r.periode}</td><td>${r.tayanganRaw||r.tayangan||'—'}</td><td>${r.jangkauanRaw||r.jangkauan||'—'}</td><td>${r.interaksiRaw||r.interaksi||'—'}</td><td>${r.klikRaw||'—'}</td><td>${r.kunjunganRaw||'—'}</td><td>${r.pengikutRaw||'—'}</td><td>${formatPercent(er)}</td></tr>`;
- }).join('');
+ document.getElementById('tableBody').innerHTML=pageData.map(r=>`<tr><td>${r.waktu}</td><td>${r.brandRaw}</td><td><span class="badge">${r.brand}</span></td><td><span class="badge ${r.platform==='IG'?'badge-ig':'badge-tiktok'}">${r.platform}</span></td><td>${r.periode}</td><td>${r.engagement}%</td><td>${r.interaction}</td><td>${r.views}</td><td>${r.like}</td><td>${r.comments}</td><td>${r.saved}</td><td>${r.shares}</td><td>${r.reel}</td><td>${r.follower}</td><td>${r.profile}</td></tr>`).join('');
  const pag=document.getElementById('pagination');
  let html=`<button ${currentPage===1?'disabled':''} onclick="changePage(-1)">‹ Prev</button>`;
- for(let i=1;i<=Math.min(totalPages,10);i++) html+=`<button class="${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
- if(totalPages>10) html+=`<span style="color:#666;font-size:10px">... ${totalPages}</span>`;
+ for(let i=1;i<=Math.min(totalPages,10);i++) html+=`<button class="${i===currentPage?'active':''}" style="background:${i===currentPage?'#4a9eff':'#222'};border:1px solid #333;color:#fff;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="goPage(${i})">${i}</button>`;
  html+=`<button ${currentPage===totalPages||0?'disabled':''} onclick="changePage(1)">Next ›</button>`;
  pag.innerHTML=html;
 }
 function changePage(d){ currentPage+=d; renderTable(); }
 function goPage(p){ currentPage=p; renderTable(); }
-function drawChart(id,labels,data,isPercent=false){
- if(charts[id]) charts[id].destroy();
- const colors={chartTayangan:'#4a9eff',chartJangkauan:'#ff9800',chartInteraksi:'#9c27b0',chartER:'#4caf50'};
- charts[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:[{data,backgroundColor:colors[id]||'#4a9eff'}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=> isPercent? formatPercent(c.parsed.y):formatNum(c.parsed.y)}}},scales:{x:{ticks:{color:'#888',maxRotation:40},grid:{color:'#222'}},y:{ticks:{color:'#888',callback:v=> isPercent? v+'%':formatNum(v)},grid:{color:'#222'}}}}});
-}
 document.getElementById('btnGenerate').addEventListener('click',()=>{
- const data=getFiltered(); const grouped={}; data.forEach(r=>{ const k=r.brand; if(!grouped[k]) grouped[k]=[]; grouped[k].push(r); });
- let report=`LAPORAN IG INSIGHT - ${new Date().toLocaleString('id-ID')}\nFilter: Brand=${document.getElementById('brandFilter').value||'Semua'} | Platform=${document.getElementById('platformFilter').value||'Semua'}\n========================================\n\n`;
- let tot={tayangan:0,jangkauan:0,interaksi:0,kunjungan:0,pengikut:0,klik:0};
- Object.keys(grouped).sort().forEach(k=>{
-  const arr=grouped[k].slice().reverse();
-  const t=arr.find(x=>x.tayangan>0)?.tayangan||0; const j=arr.find(x=>x.jangkauan>0)?.jangkauan||0; const i=arr.find(x=>x.interaksi>0)?.interaksi||0; const klik=arr.find(x=>x.klik>0)?.klik||0; const kunj=arr.find(x=>x.kunjungan>0)?.kunjungan||0; const peng=arr.find(x=>x.pengikut>0)?.pengikut||0;
-  tot.tayangan+=t; tot.jangkauan+=j; tot.interaksi+=i; tot.kunjungan+=kunj; tot.pengikut+=peng; tot.klik+=klik;
-  report+=`${k} (${arr[0].platform})\n  Tayangan: ${t} | Jangkauan: ${j} | Interaksi: ${i} | ER: ${formatPercent(calcER(i,j))}\n  Klik: ${klik} | Kunjungan: ${kunj} | Pengikut: ${peng}\n  Last: ${arr[0].waktu}\n\n`;
+ const data=getFiltered();
+ let report=`LAPORAN DETAIL - ${new Date().toLocaleString('id-ID')}\nFilter: Brand=${document.getElementById('brandFilter').value||'Semua'} | Platform=${document.getElementById('platformFilter').value||'Semua'} | ${data.length} baris\n================================================\n`;
+ data.slice().reverse().slice(0,20).forEach(r=>{
+   report+=`${r.waktu} | ${r.brand} (${r.platform}) | Periode: ${r.periode}\n`;
+   report+=`  Engagement: ${r.engagement}% | Interaction: ${r.interaction} | Views: ${r.views} | Like: ${r.like} | Comments: ${r.comments} | Saved: ${r.saved} | Shares: ${r.shares} | Reel: ${r.reel} | Follower: ${r.follower} | Profile: ${r.profile}\n\n`;
  });
- report+=`========================================\nTOTAL Tayangan: ${tot.tayangan}\nTOTAL Jangkauan: ${tot.jangkauan}\nTOTAL Interaksi: ${tot.interaksi}\nAVG ER: ${formatPercent(calcER(tot.interaksi,tot.jangkauan))}\n`;
- document.getElementById('reportText').textContent=report;
- document.getElementById('reportModal').classList.add('show');
+ report+=`================================================\nTOTAL Views: ${data.reduce((s,r)=>s+r.views,0)}\nTOTAL Like: ${data.reduce((s,r)=>s+r.like,0)}\nTOTAL Comments: ${data.reduce((s,r)=>s+r.comments,0)}\nAVG Engagement: ${(data.reduce((s,r)=>s+r.engagement,0)/ (data.length||1)).toFixed(2)}%\n`;
+ alert(report.substring(0,3000));
 });
-function closeModal(){ document.getElementById('reportModal').classList.remove('show'); }
-function copyReport(){ navigator.clipboard.writeText(document.getElementById('reportText').textContent).then(()=>alert('Copied!')); }
 ['startDate','endDate','brandFilter','platformFilter'].forEach(id=> document.getElementById(id).addEventListener('change',()=>{currentPage=1;updateView();}));
 document.addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('btnGenerate').click(); });
 loadData(); setInterval(loadData,60000);
