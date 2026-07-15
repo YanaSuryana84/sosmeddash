@@ -9,92 +9,128 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,sans-serif;background:#0a0a0a;color:#fff;padding:20px}
-.container{max-width:1400px;margin:0 auto}
-h1{font-size:28px;margin-bottom:8px}
-.subtitle{color:#4caf50;font-size:14px;margin-bottom:20px}
-.filters{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap}
-.filters select,.filters input{background:#1a1a1a;border:1px solid #333;color:#fff;padding:8px 12px;border-radius:6px}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
-.kpi{background:#1a1a1a;padding:20px;border-radius:8px;border:1px solid #333}
-.kpi-label{font-size:12px;color:#888;margin-bottom:8px}
-.kpi-value{font-size:28px;font-weight:700}
-.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:16px;margin-bottom:24px}
-.chart-box{background:#1a1a1a;padding:20px;border-radius:8px;border:1px solid #333}
-.chart-title{font-size:14px;margin-bottom:12px;color:#aaa}
-table{width:100%;background:#1a1a1a;border-collapse:collapse;border-radius:8px;overflow:hidden}
-th,td{padding:12px;text-align:left;border-bottom:1px solid #333;font-size:14px}
-th{background:#222;color:#aaa;font-weight:600}
-.debug{margin-top:20px;padding:12px;background:#1a1a1a;border-radius:6px;font-size:12px;color:#888;white-space:pre-wrap}
+.container{max-width:1500px;margin:0 auto}
+h1{font-size:28px;margin-bottom:6px}
+.subtitle{color:#4caf50;font-size:13px;margin-bottom:16px}
+.filters{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+.filters select,.filters input, .btn{background:#1a1a1a;border:1px solid #333;color:#fff;padding:8px 12px;border-radius:6px;font-size:13px;cursor:pointer}
+.btn{background:#4a9eff;color:#fff;border:none;font-weight:600;padding:9px 18px}
+.btn:hover{background:#3a8eef}
+.btn-green{background:#4caf50}
+.btn-green:hover{background:#3d9c40}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:#1a1a1a;padding:16px;border-radius:8px;border:1px solid #333}
+.kpi-label{font-size:11px;color:#888;margin-bottom:6px;text-transform:uppercase}
+.kpi-value{font-size:24px;font-weight:700}
+.kpi-sub{font-size:11px;color:#666;margin-top:4px}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:12px;margin-bottom:18px}
+.chart-box{background:#1a1a1a;padding:16px;border-radius:8px;border:1px solid #333}
+.chart-title{font-size:13px;margin-bottom:10px;color:#aaa}
+.table-wrap{background:#1a1a1a;border-radius:8px;border:1px solid #333;overflow:hidden}
+.table-header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #333}
+.table-header h3{font-size:13px;color:#aaa}
+.table-header .info{font-size:11px;color:#666}
+.table-scroll{max-height:420px;overflow-y:auto;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #2a2a2a;white-space:nowrap}
+th{background:#222;color:#aaa;font-weight:600;position:sticky;top:0;z-index:2}
+tr:hover{background:#222}
+.badge{padding:2px 6px;border-radius:4px;font-size:11px;border:1px solid #333;background:#222}
+.badge-ig{background:#833AB4;color:#fff;border-color:#833AB4}
+.badge-tiktok{background:#000;color:#fff}
+.badge-yt{background:#FF0000;color:#fff}
+.pagination{display:flex;gap:6px;align-items:center;padding:12px 16px;border-top:1px solid #333;background:#1a1a1a;flex-wrap:wrap}
+.pagination button{background:#222;border:1px solid #333;color:#aaa;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:12px}
+.pagination button.active{background:#4a9eff;color:#fff;border-color:#4a9eff}
+.pagination button:disabled{opacity:0.4;cursor:not-allowed}
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal.show{display:flex}
+.modal-content{background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:24px;max-width:700px;width:100%;max-height:80vh;overflow-y:auto}
+.modal-content h2{font-size:20px;margin-bottom:12px}
+.modal-content pre{background:#0a0a0a;padding:16px;border-radius:8px;border:1px solid #333;font-size:12px;white-space:pre-wrap;margin:12px 0;color:#ccc}
 </style>
 </head>
 <body>
 <div class="container">
 <h1>Dashboard Sosmed</h1>
-<div class="subtitle" id="status">Loading data dari Google Sheet...</div>
+<div class="subtitle" id="status">Loading...</div>
 <div class="filters">
 <input type="date" id="startDate"><input type="date" id="endDate">
 <select id="brandFilter"><option value="">Semua Brand</option></select>
 <select id="platformFilter"><option value="">Semua Platform</option><option value="IG">IG</option><option value="TikTok">TikTok</option><option value="Threads">Threads</option><option value="YouTube">YouTube</option><option value="Facebook">Facebook</option></select>
+<button class="btn btn-green" id="btnGenerate">⚡ Generate Laporan Real</button>
 </div>
 <div class="kpis">
-<div class="kpi"><div class="kpi-label">Total Followers</div><div class="kpi-value" id="kpiFollowers">0</div></div>
+<div class="kpi"><div class="kpi-label">Total Followers</div><div class="kpi-value" id="kpiFollowers">0</div><div class="kpi-sub" id="kpiFollowersSub"></div></div>
 <div class="kpi"><div class="kpi-label">Total Reach</div><div class="kpi-value" id="kpiReach">0</div></div>
-<div class="kpi"><div class="kpi-label">Total Engagement</div><div class="kpi-value" id="kpiEng">0</div><div class="kpi-sub" id="kpiEngRaw" style="font-size:12px;color:#666;margin-top:4px"></div></div>
-<div class="kpi"><div class="kpi-label">Avg ER (Engagement Rate)</div><div class="kpi-value" id="kpiER">0%</div><div class="kpi-sub" style="font-size:12px;color:#666;margin-top:4px">Eng / Reach</div></div>
-</div>
-<div class="kpis" style="margin-top:0">
-<div class="kpi" style="padding:12px 20px"><div class="kpi-label">Total Data</div><div class="kpi-value" style="font-size:20px" id="kpiPosts">0</div></div>
+<div class="kpi"><div class="kpi-label">Total Engagement</div><div class="kpi-value" id="kpiEng">0</div><div class="kpi-sub" id="kpiEngSub"></div></div>
+<div class="kpi"><div class="kpi-label">Avg ER</div><div class="kpi-value" id="kpiER">0%</div><div class="kpi-sub">Eng / Reach</div></div>
+<div class="kpi"><div class="kpi-label">Total Baris</div><div class="kpi-value" id="kpiPosts" style="font-size:20px">0</div><div class="kpi-sub" id="kpiValidSub"></div></div>
 </div>
 <div class="charts">
 <div class="chart-box"><div class="chart-title">Followers by Brand (Latest Valid)</div><canvas id="chartBrand"></canvas></div>
 <div class="chart-box"><div class="chart-title">Reach by Brand (Latest Valid)</div><canvas id="chartReach"></canvas></div>
-<div class="chart-box"><div class="chart-title">ER by Brand (%) - Higher is Better</div><canvas id="chartER"></canvas></div>
+<div class="chart-box"><div class="chart-title">ER by Brand (%)</div><canvas id="chartER"></canvas></div>
 </div>
+
+<div class="table-wrap">
+<div class="table-header">
+<h3>Laporan Detail (Max 10 per halaman)</h3>
+<div class="info" id="tableInfo">Menampilkan 0-0 dari 0</div>
+</div>
+<div class="table-scroll" id="tableScroll">
 <table>
-<thead><tr><th>Waktu Push</th><th>Brand</th><th>Platform</th><th>Periode</th><th>Reach</th><th>Engagement</th><th>Followers</th><th>ER %</th></tr></thead>
+<thead><tr><th>Waktu Push</th><th>Brand Asli</th><th>Brand Group</th><th>Platform</th><th>Periode</th><th>Reach</th><th>Engagement</th><th>Followers</th><th>ER %</th></tr></thead>
 <tbody id="tableBody"></tbody>
 </table>
-<div class="debug" id="debug"></div>
 </div>
+<div class="pagination" id="pagination"></div>
+</div>
+</div>
+
+<div class="modal" id="reportModal">
+<div class="modal-content">
+<h2>📊 Laporan Real - Latest Valid per Brand</h2>
+<p style="font-size:13px;color:#888">Data sudah digabung typo (Labbaik = Labbaik Chicken, OFC = Oven Fried Chicken, dll) dan diambil yang terbaru valid.</p>
+<pre id="reportText"></pre>
+<div style="display:flex;gap:10px;margin-top:12px">
+<button class="btn" onclick="copyReport()">📋 Copy Laporan</button>
+<button class="btn" style="background:#333" onclick="closeModal()">Tutup</button>
+</div>
+</div>
+</div>
+
 <script>
 const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQAEUueYms0SnC-JXracRWmYLZ55VqptcgNGGpAWpnMqIQU7oFhd8KWO4ZXr85ZzOLvfBQX0I9aLEHr/pub?gid=269503424&single=true&output=csv';
-let allData=[], charts={};
+let allData=[], charts={}, currentPage=1, pageSize=10;
 
 function toNum(v){
- if(v===null||v===undefined) return 0;
+ if(v==null) return 0;
  let s=String(v).trim();
  if(s===''||s==='—'||s==='-'||s==='–') return 0;
- // contoh: "245.881 akun" -> "245881", "1.077 per Reels" -> "1077", "❗581" -> "581"
- s=s.split('(')[0];
+ s=s.split('(')[0].trim();
  s=s.replace(/[^0-9]/g,'');
- if(s==='') return 0;
- return parseInt(s,10)||0;
+ return s ? parseInt(s,10) : 0;
 }
 function formatNum(n){
- if(n>=1e6) return (n/1e6).toFixed(1)+'M';
+ if(n>=1e6) return (n/1e6).toFixed(2)+'M';
  if(n>=1e3) return (n/1e3).toFixed(1)+'K';
  return n.toLocaleString('id-ID');
 }
-function calcER(eng, reach){
- if(!reach || !eng) return 0;
- return (eng / reach * 100);
-}
-function formatPercent(v){
- if(v>=10) return v.toFixed(1)+'%';
- if(v>=1) return v.toFixed(2)+'%';
- return v.toFixed(3)+'%';
-}
+function calcER(eng,reach){ if(!reach||!eng) return 0; return eng/reach*100; }
+function formatPercent(v){ if(v>=10) return v.toFixed(1)+'%'; if(v>=1) return v.toFixed(2)+'%'; if(v>0) return v.toFixed(3)+'%'; return '—'; }
 function normalizeBrand(b){
  b=String(b).trim().toLowerCase();
- if(b.includes('sedjati eco')) return 'SEF';
  if(b.includes('labbaik')) return 'Labbaik Chicken';
+ if(b==='ofc' || b.includes('oven fried') || b.includes('oven')) return 'OFC';
+ if(b.includes('sedjati eco') || b==='sef' || (b.includes('eco') && b.includes('farm'))) return 'SEF';
+ if(b.includes('petani') || b==='psm' || b.includes('sedjati mandiri')) return 'PSM';
+ if(b.includes('sedjati coffee') || b.includes('sedjati cofee') || b==='sedjati' || (b.includes('sedjati') && !b.includes('eco') && !b.includes('petani') && !b.includes('farm'))) return 'Sedjati Coffee';
+ if(b.includes('baso') || b.includes('kajojo')) return 'Baso Kajojo';
+ if(b.includes('spud') || b.includes('potata')) return 'Spud Potata';
+ if(b.includes('obie') || b.includes('donut') || b.includes('donat')) return 'Obie Donat';
  if(b.includes('waydee')) return 'Waydee';
- if(b.includes('sedjati coffe')) return 'Sedjati Coffee';
- if(b.includes('luqman')||b==='lh') return 'LH';
- if(b.includes('baso')) return 'Baso Kajojo';
- if(b.includes('spud')) return 'Spud Potata';
- if(b.includes('obie')) return 'Obie Donat';
- if(b==='ofc') return 'OFC';
+ if(b.includes('luqman') || b==='lh') return 'Luqman Hakim';
  return b.toUpperCase();
 }
 function normalizePlatform(p){
@@ -110,198 +146,183 @@ function normalizePlatform(p){
 
 async function loadData(){
  try{
-  document.getElementById('status').textContent='Fetching...';
   const res=await fetch(CSV_URL);
-  if(!res.ok) throw new Error('Fetch failed '+res.status);
   const csv=await res.text();
-  document.getElementById('debug').textContent='CSV preview (200 char): '+csv.substring(0,300);
-  
   const parsed=Papa.parse(csv,{header:true,skipEmptyLines:'greedy',trimHeader:true});
-  // Normalize header: trim all keys
-  const rawData = parsed.data.map(row=>{
-    const cleanRow={};
-    Object.keys(row).forEach(k=>{
-      const cleanKey=k.trim();
-      cleanRow[cleanKey]=row[k];
-    });
-    return cleanRow;
+  const rows=parsed.data.map(row=>{
+    const clean={};
+    Object.keys(row).forEach(k=> clean[k.trim()]=row[k]);
+    return clean;
   });
-
-  allData = rawData.map(r=>{
-    const brandRaw = (r['Brand']||'').trim();
+  allData=rows.map(r=>{
+    const brandRaw=(r['Brand']||'').trim();
     if(!brandRaw) return null;
-    const platRaw = (r['Platform']||r['platform']||'').trim();
+    const platRaw=(r['Platform']||r['platform']||'').trim();
     return {
-      waktu: (r['Waktu Push']||'').trim(),
-      brandRaw: brandRaw,
+      waktu:(r['Waktu Push']||'').trim(),
+      brandRaw:brandRaw,
       brand: normalizeBrand(brandRaw),
       platformRaw: platRaw,
       platform: normalizePlatform(platRaw),
-      periode: (r['Periode']||'').trim(),
+      periode:(r['Periode']||'').trim(),
+      reachRaw:(r['Reach']||'').trim(),
+      engRaw:(r['Engagement']||'').trim(),
+      follRaw:(r['Followers']||'').trim(),
       reach: toNum(r['Reach']),
       engagement: toNum(r['Engagement']),
       followers: toNum(r['Followers']),
-      reachRaw: (r['Reach']||'').trim(),
-      engRaw: (r['Engagement']||'').trim(),
-      follRaw: (r['Followers']||'').trim(),
     };
   }).filter(Boolean);
-
-  // Sort ascending by waktu string, then later reverse
   allData.sort((a,b)=> a.waktu.localeCompare(b.waktu));
-
-  updateBrands(); 
-  updateView();
-  document.getElementById('status').textContent=`Data update: ${new Date().toLocaleString('id-ID')} | ${allData.length} baris | valid: ${allData.filter(x=>x.followers>0||x.reach>0).length}`;
-
- }catch(e){
-  document.getElementById('status').textContent='Error: '+e.message;
-  document.getElementById('debug').textContent=e.stack;
- }
+  updateBrands(); updateView();
+  document.getElementById('status').textContent=`OK - ${allData.length} baris | Brand: ${[...new Set(allData.map(x=>x.brand))].join(', ')}`;
+ }catch(e){ document.getElementById('status').textContent='Error: '+e.message; }
 }
-
 function updateBrands(){
  const brands=[...new Set(allData.map(r=>r.brand))].sort();
  document.getElementById('brandFilter').innerHTML='<option value="">Semua Brand</option>'+brands.map(b=>`<option value="${b}">${b}</option>`).join('');
- // Update platform filter from data too
- const platformsInData=[...new Set(allData.map(r=>r.platform).filter(p=>p && p!=='—'))].sort();
- if(platformsInData.length>0){
+ const plats=[...new Set(allData.map(r=>r.platform).filter(p=>p && p!=='—'))].sort();
+ if(plats.length>0){
    const base=['IG','TikTok','Threads','YouTube','Facebook'];
-   const allPlats=[...new Set([...base, ...platformsInData])];
-   document.getElementById('platformFilter').innerHTML='<option value="">Semua Platform</option>'+allPlats.map(p=>`<option value="${p}">${p}</option>`).join('');
+   const all=[...new Set([...base,...plats])];
+   document.getElementById('platformFilter').innerHTML='<option value="">Semua Platform</option>'+all.map(p=>`<option value="${p}">${p}</option>`).join('');
  }
 }
-function parseDateFromWaktu(w){
- try{ const d=w.split(' ')[0]; const [day,month,year]=d.split('/'); return `${year}-${month}-${day}`; }catch{ return '' }
-}
+function parseDate(w){ try{ const d=w.split(' ')[0]; const [day,m,y]=d.split('/'); return `${y}-${m}-${day}`;}catch{return ''} }
 function getFiltered(){
  const sDate=document.getElementById('startDate').value;
  const eDate=document.getElementById('endDate').value;
  const brand=document.getElementById('brandFilter').value;
- const platform=document.getElementById('platformFilter').value;
+ const plat=document.getElementById('platformFilter').value;
  return allData.filter(r=>{
-  const rDate=parseDateFromWaktu(r.waktu);
-  if(sDate&&rDate&&rDate<sDate) return false;
-  if(eDate&&rDate&&rDate>eDate) return false;
-  if(brand&&r.brand!==brand) return false;
-  if(platform&&r.platform!==platform) return false;
+  const rd=parseDate(r.waktu);
+  if(sDate&&rd&&rd<sDate) return false;
+  if(eDate&&rd&&rd>eDate) return false;
+  if(brand && r.brand!==brand) return false;
+  if(plat && r.platform!==plat) return false;
   return true;
  });
 }
 function updateView(){
+ currentPage=1;
  const data=getFiltered();
- // Group by brand+platform
  const grouped={};
- data.forEach(r=>{
-  const key = r.brand + '|' + r.platform;
-  if(!grouped[key]) grouped[key]=[];
-  grouped[key].push(r);
- });
-
+ data.forEach(r=>{ const k=r.brand; if(!grouped[k]) grouped[k]=[]; grouped[k].push(r); });
  const latestMap={};
- Object.keys(grouped).forEach(key=>{
-  const arr = grouped[key].slice().reverse();
-  const latestRow = arr[0];
-  const latestFollowers = arr.find(x=> x.followers>0)?.followers || 0;
-  const latestReach = arr.find(x=> x.reach>0)?.reach || 0;
-  const latestEng = arr.find(x=> x.engagement>0)?.engagement || 0;
-  const latestReachRaw = arr.find(x=> x.reach>0)?.reachRaw || latestRow.reachRaw;
-  const latestFollRaw = arr.find(x=> x.followers>0)?.follRaw || latestRow.follRaw;
-  const latestEngRaw = arr.find(x=> x.engagement>0)?.engRaw || latestRow.engRaw;
-  latestMap[key]={
-   key: key,
-   waktu: latestRow.waktu,
-   periode: latestRow.periode,
-   brand: latestRow.brand,
-   platform: latestRow.platform,
-   followers: latestFollowers,
-   reach: latestReach,
-   engagement: latestEng,
-   reachRaw: latestReachRaw,
-   follRaw: latestFollRaw,
-   engRaw: latestEngRaw,
-   _latestRow: latestRow
-  };
+ Object.keys(grouped).forEach(k=>{
+  const arr=grouped[k].slice().reverse();
+  const latestRow=arr[0];
+  latestMap[k]={ brand:k, followers:arr.find(x=>x.followers>0)?.followers||0, reach:arr.find(x=>x.reach>0)?.reach||0, engagement:arr.find(x=>x.engagement>0)?.engagement||0, waktu:latestRow.waktu };
  });
-
  const latestArr=Object.values(latestMap);
- 
- const totalFollowers = latestArr.reduce((s,r)=>s+r.followers,0);
- const totalReach = latestArr.reduce((s,r)=>s+r.reach,0);
- const totalEng = latestArr.reduce((s,r)=>s+r.engagement,0);
- const avgER = totalReach>0? calcER(totalEng, totalReach) : 0;
-
+ const totalFollowers=latestArr.reduce((s,r)=>s+r.followers,0);
+ const totalReach=latestArr.reduce((s,r)=>s+r.reach,0);
+ const totalEng=latestArr.reduce((s,r)=>s+r.engagement,0);
+ const avgER= totalReach? calcER(totalEng,totalReach):0;
  document.getElementById('kpiFollowers').textContent=formatNum(totalFollowers);
+ document.getElementById('kpiFollowersSub').textContent=latestArr.map(r=>`${r.brand}: ${formatNum(r.followers)}`).join(', ').substring(0,120);
  document.getElementById('kpiReach').textContent=formatNum(totalReach);
  document.getElementById('kpiEng').textContent=formatNum(totalEng);
- document.getElementById('kpiEngRaw').textContent= totalReach>0 ? `${formatPercent(avgER)} dari Reach` : '';
+ document.getElementById('kpiEngSub').textContent= totalReach? `${formatPercent(avgER)} dari Reach` : '';
  document.getElementById('kpiER').textContent=formatPercent(avgER);
  document.getElementById('kpiPosts').textContent=data.length;
-
- const byFollowers={}; 
- const byReach={};
- const byER={};
- latestArr.forEach(r=>{
-   const label = r.platform && r.platform!=='—' ? `${r.brand} (${r.platform})` : r.brand;
-   byFollowers[label]=r.followers;
-   byReach[label]=r.reach;
-   byER[label]= calcER(r.engagement, r.reach);
- });
-
- drawChart('chartBrand',Object.keys(byFollowers),Object.values(byFollowers));
- drawChart('chartReach',Object.keys(byReach),Object.values(byReach));
- drawChart('chartER',Object.keys(byER),Object.values(byER), true);
-
- document.getElementById('tableBody').innerHTML=data.slice().reverse().slice(0,100).map(r=>{
-  const er = calcER(r.engagement, r.reach);
-  const platBadge = r.platform && r.platform!=='—' ? `<span style="background:#222;border:1px solid #333;padding:2px 6px;border-radius:4px;font-size:12px">${r.platform}</span>` : '—';
+ document.getElementById('kpiValidSub').textContent=`valid F:${data.filter(x=>x.followers>0).length} R:${data.filter(x=>x.reach>0).length}`;
+ const byF={}, byR={}, byER={};
+ latestArr.forEach(r=>{ byF[r.brand]=r.followers; byR[r.brand]=r.reach; byER[r.brand]=calcER(r.engagement,r.reach); });
+ drawChart('chartBrand',Object.keys(byF),Object.values(byF));
+ drawChart('chartReach',Object.keys(byR),Object.values(byR));
+ drawChart('chartER',Object.keys(byER),Object.values(byER),true);
+ renderTable();
+}
+function renderTable(){
+ const data=getFiltered().slice().reverse();
+ const total=data.length;
+ const totalPages=Math.ceil(total/pageSize);
+ if(currentPage>totalPages) currentPage=totalPages||1;
+ const start=(currentPage-1)*pageSize;
+ const end=Math.min(start+pageSize, total);
+ const pageData=data.slice(start,end);
+ document.getElementById('tableInfo').textContent=`Menampilkan ${total?start+1:0}-${end} dari ${total} (halaman ${currentPage}/${totalPages||1})`;
+ document.getElementById('tableBody').innerHTML=pageData.map(r=>{
+  const er=calcER(r.engagement,r.reach);
+  const badgeClass= r.platform==='IG'?'badge-ig': r.platform==='TikTok'?'badge-tiktok': r.platform==='YouTube'?'badge-yt':'badge';
+  const platBadge= r.platform && r.platform!=='—' ? `<span class="badge ${badgeClass}">${r.platform}</span>` : '—';
   return `<tr>
-    <td>${r.waktu}</td>
-    <td>${r.brand}</td>
-    <td>${platBadge}</td>
-    <td>${r.periode}</td>
-    <td>${r.reachRaw||0}</td>
-    <td>${r.engRaw||0}</td>
-    <td>${r.follRaw||0}</td>
-    <td style="color:${er>1?'#4caf50':'#888'}">${er>0?formatPercent(er):'—'}</td>
+   <td>${r.waktu}</td>
+   <td>${r.brandRaw}</td>
+   <td><span class="badge">${r.brand}</span></td>
+   <td>${platBadge}</td>
+   <td>${r.periode}</td>
+   <td>${r.reachRaw||'—'}</td>
+   <td>${r.engRaw||'—'}</td>
+   <td>${r.follRaw||'—'}</td>
+   <td style="color:${er>1?'#4caf50':'#888'}">${formatPercent(er)}</td>
   </tr>`;
  }).join('');
+ // pagination
+ const pag=document.getElementById('pagination');
+ let html='';
+ html+=`<button ${currentPage===1?'disabled':''} onclick="changePage(-1)">‹ Prev</button>`;
+ for(let i=1;i<=Math.min(totalPages,10);i++){
+   html+=`<button class="${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+ }
+ if(totalPages>10) html+=`<span style="color:#666;font-size:12px">... ${totalPages} halaman</span>`;
+ html+=`<button ${currentPage===totalPages||totalPages===0?'disabled':''} onclick="changePage(1)">Next ›</button>`;
+ html+=`<span style="margin-left:12px;color:#666;font-size:11px">Scroll kanan-kiri & atas-bawah di tabel untuk liat lengkap 1-100</span>`;
+ pag.innerHTML=html;
 }
+function changePage(dir){ currentPage+=dir; renderTable(); document.getElementById('tableScroll').scrollTop=0; }
+function goPage(p){ currentPage=p; renderTable(); document.getElementById('tableScroll').scrollTop=0; }
 
-function drawChart(id,labels,data, isPercent=false){
+function drawChart(id,labels,data,isPercent=false){
  if(charts[id]) charts[id].destroy();
- const bg = id==='chartER' ? '#4caf50' : '#4a9eff';
+ const bg=id==='chartER' ? '#4caf50' : id==='chartBrand' ? '#4a9eff' : '#ff9800';
  charts[id]=new Chart(document.getElementById(id),{
   type:'bar',
   data:{labels,datasets:[{label:isPercent?'ER %':'value',data,backgroundColor:bg}]},
-  options:{
-    responsive:true,
-    plugins:{
-      legend:{display:false},
-      tooltip:{
-        callbacks:{
-          label: (ctx)=>{
-            if(isPercent) return formatPercent(ctx.parsed.y);
-            return formatNum(ctx.parsed.y);
-          }
-        }
-      }
-    },
-    scales:{
-      x:{ticks:{color:'#888',maxRotation:45},grid:{color:'#333'}},
-      y:{
-        ticks:{
-          color:'#888',
-          callback: function(val){ return isPercent ? val+'%' : formatNum(val); }
-        },
-        grid:{color:'#333'}
-      }
-    }
-  }
+  options:{responsive:true,plugins:{legend:{display:false},tooltip:{ callbacks:{ label:(ctx)=> isPercent? formatPercent(ctx.parsed.y) : formatNum(ctx.parsed.y) } } },scales:{x:{ticks:{color:'#888',maxRotation:40},grid:{color:'#222'}},y:{ticks:{color:'#888',callback:v=> isPercent? v+'%' : formatNum(v)},grid:{color:'#222'}}}}
  });
 }
 
-['startDate','endDate','brandFilter','platformFilter'].forEach(id=>{document.getElementById(id).addEventListener('change',updateView);});
+// Generate Report
+document.getElementById('btnGenerate').addEventListener('click',()=>{
+ const data=getFiltered();
+ const grouped={};
+ data.forEach(r=>{ const k=r.brand; if(!grouped[k]) grouped[k]=[]; grouped[k].push(r); });
+ let report=`LAPORAN REAL SOSMED - ${new Date().toLocaleString('id-ID')}\n`;
+ report+=`Filter: Brand=${document.getElementById('brandFilter').value||'Semua'} | Platform=${document.getElementById('platformFilter').value||'Semua'} | Total baris=${data.length}\n`;
+ report+=`==================================================\n\n`;
+ let totalF=0, totalR=0, totalE=0;
+ Object.keys(grouped).sort().forEach(k=>{
+  const arr=grouped[k].slice().reverse();
+  const f=arr.find(x=>x.followers>0)?.followers||0;
+  const r=arr.find(x=>x.reach>0)?.reach||0;
+  const e=arr.find(x=>x.engagement>0)?.engagement||0;
+  const er=calcER(e,r);
+  totalF+=f; totalR+=r; totalE+=e;
+  const last=arr[0];
+  report+=`${k}\n`;
+  report+=`  Followers : ${f.toLocaleString('id-ID')} (raw: ${arr.find(x=>x.followers>0)?.follRaw||'-'})\n`;
+  report+=`  Reach     : ${r.toLocaleString('id-ID')} (raw: ${arr.find(x=>x.reach>0)?.reachRaw||'-'})\n`;
+  report+=`  Engagement: ${e.toLocaleString('id-ID')} (raw: ${arr.find(x=>x.engagement>0)?.engRaw||'-'})\n`;
+  report+=`  ER        : ${formatPercent(er)}\n`;
+  report+=`  Last Update: ${last.waktu} | Periode: ${last.periode}\n\n`;
+ });
+ report+=`==================================================\n`;
+ report+=`TOTAL Followers: ${totalF.toLocaleString('id-ID')}\n`;
+ report+=`TOTAL Reach    : ${totalR.toLocaleString('id-ID')}\n`;
+ report+=`TOTAL Engagement: ${totalE.toLocaleString('id-ID')}\n`;
+ report+=`AVG ER         : ${formatPercent(calcER(totalE,totalR))}\n`;
+ document.getElementById('reportText').textContent=report;
+ document.getElementById('reportModal').classList.add('show');
+});
+function closeModal(){ document.getElementById('reportModal').classList.remove('show'); }
+function copyReport(){
+ const text=document.getElementById('reportText').textContent;
+ navigator.clipboard.writeText(text).then(()=>{ alert('Laporan tercopy!'); });
+}
+
+['startDate','endDate','brandFilter','platformFilter'].forEach(id=> document.getElementById(id).addEventListener('change',updateView));
 loadData(); setInterval(loadData,60000);
 </script>
 </body>
