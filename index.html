@@ -3,204 +3,188 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Sosmed - IG Insight Version</title>
+<title>Dashboard Sosmed - IG Insight Fix</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,sans-serif;background:#0a0a0a;color:#fff;padding:20px}
 .container{max-width:1600px;margin:0 auto}
-h1{font-size:28px;margin-bottom:6px}
-.subtitle{color:#4caf50;font-size:13px;margin-bottom:16px}
-.filters{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
-.filters select,.filters input,.btn{background:#1a1a1a;border:1px solid #333;color:#fff;padding:8px 12px;border-radius:6px;font-size:13px;cursor:pointer}
-.btn{background:#4a9eff;color:#fff;border:none;font-weight:600;padding:9px 18px}
-.btn:hover{background:#3a8eef}
+h1{font-size:26px;margin-bottom:6px}
+.subtitle{color:#4caf50;font-size:12px;margin-bottom:14px;line-height:1.5}
+.filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filters select,.filters input,.btn{background:#1a1a1a;border:1px solid #333;color:#fff;padding:7px 11px;border-radius:6px;font-size:12px;cursor:pointer}
+.btn{background:#4a9eff;color:#fff;border:none;font-weight:600;padding:8px 16px}
 .btn-green{background:#4caf50}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:18px}
-.kpi{background:#1a1a1a;padding:14px;border-radius:8px;border:1px solid #333}
-.kpi-label{font-size:10px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
-.kpi-value{font-size:22px;font-weight:700}
-.kpi-sub{font-size:10px;color:#666;margin-top:4px}
-.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px;margin-bottom:18px}
-.chart-box{background:#1a1a1a;padding:16px;border-radius:8px;border:1px solid #333}
-.chart-title{font-size:13px;margin-bottom:10px;color:#aaa}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:16px}
+.kpi{background:#1a1a1a;padding:12px;border-radius:8px;border:1px solid #333}
+.kpi-label{font-size:10px;color:#888;margin-bottom:4px;text-transform:uppercase}
+.kpi-value{font-size:20px;font-weight:700}
+.kpi-sub{font-size:10px;color:#666;margin-top:2px}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;margin-bottom:16px}
+.chart-box{background:#1a1a1a;padding:14px;border-radius:8px;border:1px solid #333}
+.chart-title{font-size:12px;margin-bottom:8px;color:#aaa}
 .table-wrap{background:#1a1a1a;border-radius:8px;border:1px solid #333;overflow:hidden}
-.table-header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #333}
-.table-header h3{font-size:13px;color:#aaa}
-.table-scroll{max-height:420px;overflow-y:auto;overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th,td{padding:8px 10px;text-align:left;border-bottom:1px solid #2a2a2a;white-space:nowrap}
-th{background:#222;color:#aaa;font-weight:600;position:sticky;top:0;z-index:2}
-tr:hover{background:#222}
-.badge{padding:2px 6px;border-radius:4px;font-size:11px;border:1px solid #333;background:#222}
-.pagination{display:flex;gap:6px;align-items:center;padding:12px 16px;border-top:1px solid #333;flex-wrap:wrap}
-.pagination button{background:#222;border:1px solid #333;color:#aaa;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:12px}
-.pagination button.active{background:#4a9eff;color:#fff}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.table-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #333}
+.table-scroll{max-height:420px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th,td{padding:7px 9px;text-align:left;border-bottom:1px solid #2a2a2a;white-space:nowrap}
+th{background:#222;color:#aaa;position:sticky;top:0;z-index:2}
+.badge{padding:1px 5px;border-radius:3px;font-size:10px;border:1px solid #333;background:#222}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
 .modal.show{display:flex}
-.modal-content{background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:24px;max-width:800px;width:100%;max-height:85vh;overflow-y:auto}
-.modal-content pre{background:#0a0a0a;padding:16px;border-radius:8px;border:1px solid #333;font-size:12px;white-space:pre-wrap;color:#ccc}
+.modal-content{background:#1a1a1a;border:1px solid #333;border-radius:10px;padding:20px;max-width:800px;width:100%;max-height:85vh;overflow:auto}
+pre{background:#0a0a0a;padding:12px;border-radius:6px;border:1px solid #333;font-size:11px;white-space:pre-wrap;color:#ccc}
 </style>
 </head>
 <body>
 <div class="container">
-<h1>Dashboard Sosmed <span style="font-size:14px;color:#888">- IG Insight Version</span></h1>
-<div class="subtitle" id="status">Loading...</div>
+<h1>Dashboard Sosmed <span style="font-size:13px;color:#888">- IG Insight Fix</span></h1>
+<div class="subtitle" id="status">Loading... Mencoba 3 sumber Sheet...</div>
 <div class="filters">
 <input type="date" id="startDate"><input type="date" id="endDate">
 <select id="brandFilter"><option value="">Semua Brand</option></select>
-<select id="platformFilter"><option value="">Semua Platform</option><option value="IG">IG</option><option value="TikTok">TikTok</option><option value="Threads">Threads</option><option value="YouTube">YouTube</option><option value="Facebook">Facebook</option></select>
+<select id="platformFilter"><option value="">Semua Platform</option><option value="IG">IG</option><option value="TikTok">TikTok</option></select>
 <button class="btn btn-green" id="btnGenerate">⚡ Generate Laporan Real</button>
 </div>
-
 <div class="kpis">
-<div class="kpi"><div class="kpi-label">Tayangan</div><div class="kpi-value" id="kpiTayangan">0</div><div class="kpi-sub">Views</div></div>
-<div class="kpi"><div class="kpi-label">Jangkauan</div><div class="kpi-value" id="kpiJangkauan">0</div><div class="kpi-sub">Reach</div></div>
+<div class="kpi"><div class="kpi-label">Tayangan</div><div class="kpi-value" id="kpiTayangan">0</div></div>
+<div class="kpi"><div class="kpi-label">Jangkauan</div><div class="kpi-value" id="kpiJangkauan">0</div></div>
 <div class="kpi"><div class="kpi-label">Interaksi</div><div class="kpi-value" id="kpiInteraksi">0</div><div class="kpi-sub" id="kpiERSub"></div></div>
-<div class="kpi"><div class="kpi-label">Kunjungan Profil</div><div class="kpi-value" id="kpiKunjungan">0</div></div>
-<div class="kpi"><div class="kpi-label">Pengikut Baru</div><div class="kpi-value" id="kpiPengikut">0</div></div>
-<div class="kpi"><div class="kpi-label">Klik Tautan</div><div class="kpi-value" id="kpiKlik">0</div><div class="kpi-sub">Link Clicks</div></div>
-<div class="kpi"><div class="kpi-label">Avg ER</div><div class="kpi-value" id="kpiER">0%</div><div class="kpi-sub">Interaksi / Jangkauan</div></div>
-<div class="kpi"><div class="kpi-label">Total Data</div><div class="kpi-value" id="kpiPosts" style="font-size:18px">0</div></div>
+<div class="kpi"><div class="kpi-label">Kunjungan</div><div class="kpi-value" id="kpiKunjungan">0</div></div>
+<div class="kpi"><div class="kpi-label">Pengikut</div><div class="kpi-value" id="kpiPengikut">0</div></div>
+<div class="kpi"><div class="kpi-label">Klik Tautan</div><div class="kpi-value" id="kpiKlik">0</div></div>
+<div class="kpi"><div class="kpi-label">AVG ER</div><div class="kpi-value" id="kpiER">0%</div></div>
+<div class="kpi"><div class="kpi-label">Total Baris</div><div class="kpi-value" id="kpiPosts">0</div></div>
 </div>
-
 <div class="charts">
 <div class="chart-box"><div class="chart-title">Tayangan by Brand</div><canvas id="chartTayangan"></canvas></div>
 <div class="chart-box"><div class="chart-title">Jangkauan by Brand</div><canvas id="chartJangkauan"></canvas></div>
 <div class="chart-box"><div class="chart-title">Interaksi by Brand</div><canvas id="chartInteraksi"></canvas></div>
 <div class="chart-box"><div class="chart-title">ER by Brand (%)</div><canvas id="chartER"></canvas></div>
-<div class="chart-box"><div class="chart-title">Kunjungan & Pengikut</div><canvas id="chartKunjungan"></canvas></div>
 </div>
-
 <div class="table-wrap">
-<div class="table-header">
-<h3>Detail - Sesuai Insight IG (Max 10 / halaman)</h3>
-<div class="info" id="tableInfo" style="font-size:11px;color:#666"></div>
-</div>
-<div class="table-scroll" id="tableScroll">
-<table>
-<thead><tr><th>Waktu Push</th><th>Brand Asli</th><th>Brand Group</th><th>Platform</th><th>Periode</th><th>Tayangan</th><th>Jangkauan</th><th>Interaksi</th><th>Klik Tautan</th><th>Kunjungan</th><th>Pengikut</th><th>ER%</th></tr></thead>
-<tbody id="tableBody"></tbody>
-</table>
-</div>
-<div class="pagination" id="pagination"></div>
+<div class="table-header"><h3>Detail IG Insight (10 / halaman)</h3><div id="tableInfo" style="font-size:10px;color:#666"></div></div>
+<div class="table-scroll" id="tableScroll"><table><thead><tr><th>Waktu Push</th><th>Brand Asli</th><th>Brand Group</th><th>Platform</th><th>Periode</th><th>Tayangan</th><th>Jangkauan</th><th>Interaksi</th><th>Klik</th><th>Kunjungan</th><th>Pengikut</th><th>ER%</th></tr></thead><tbody id="tableBody"></tbody></table></div>
+<div style="padding:8px 14px;border-top:1px solid #333;display:flex;gap:6px;flex-wrap:wrap" id="pagination"></div>
 </div>
 </div>
-
-<div class="modal" id="reportModal">
-<div class="modal-content">
-<h2>📊 Laporan Real - IG Insight</h2>
-<p style="font-size:12px;color:#888">Filter sesuai pilihan Brand & Platform. ENTER juga bisa generate.</p>
-<pre id="reportText"></pre>
-<div style="display:flex;gap:10px;margin-top:12px">
-<button class="btn" onclick="copyReport()">📋 Copy</button>
-<button class="btn" style="background:#333" onclick="closeModal()">Tutup</button>
-</div>
-</div>
-</div>
-
+<div class="modal" id="reportModal"><div class="modal-content"><h2>Laporan Real</h2><pre id="reportText"></pre><div style="display:flex;gap:8px;margin-top:10px"><button class="btn" onclick="copyReport()">Copy</button><button class="btn" style="background:#333" onclick="closeModal()">Tutup</button></div></div></div>
 <script>
-const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQAEUueYms0SnC-JXracRWmYLZ55VqptcgNGGpAWpnMqIQU7oFhd8KWO4ZXr85ZzOLvfBQX0I9aLEHr/pub?gid=269503424&single=true&output=csv';
+const CSV_URLS=[
+  'https://docs.google.com/spreadsheets/d/1YGJg7u99C_kcaurxmt09T5CKR5tUPGHKbmLtz2WB4IE/export?format=csv&gid=269503424',
+  'https://docs.google.com/spreadsheets/d/1YGJg7u99C_kcaurxmt09T5CKR5tUPGHKbmLtz2WB4IE/gviz/tq?tqx=out:csv&sheet=Data%20Digital',
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAEUueYms0SnC-JXracRWmYLZ55VqptcgNGGpAWpnMqIQU7oFhd8KWO4ZXr85ZzOLvfBQX0I9aLEHr/pub?gid=269503424&single=true&output=csv'
+];
 let allData=[], charts={}, currentPage=1, pageSize=10;
 
 function toNum(v){
  if(v==null) return 0;
  let s=String(v).trim();
  if(s===''||s==='—'||s==='-'||s==='–') return 0;
- // Handle "1,4 rb" -> 1400, "1 rb" -> 1000, "1.339 tayangan" -> 1339
  s=s.toLowerCase();
- let mult=1;
- if(s.includes('rb') || s.includes('k')) mult=1000;
- if(s.includes('jt') || s.includes('m')) mult=1000000;
- s=s.replace(/[^0-9.,]/g,'').replace(',','.'); 
- // Indonesian: 1,4 rb = 1.4 *1000
- let num=parseFloat(s);
- if(isNaN(num)){
-   // fallback digits only
-   let digits=String(v).replace(/[^0-9]/g,'');
-   return digits ? parseInt(digits,10) : 0;
+ // handle "1,4 rb" -> 1400, "1 rb" -> 1000
+ if(s.includes('rb')||s.includes('k')){
+   let num=parseFloat(s.replace(',','.').replace(/[^0-9.]/g,''));
+   if(!isNaN(num)) return Math.round(num*1000);
  }
- if(mult>1 && num<10000) return Math.round(num*mult);
- // If original had "245.881" with dot as thousand -> 245881
- let digitsOnly=String(v).replace(/[^0-9]/g,'');
- if(digitsOnly.length>=4 && s.includes('.') && num<10000){
-   return parseInt(digitsOnly,10);
- }
- return Math.round(num);
+ // normal: "1.339" -> 1339, "1.077 per Reels" -> 1077, "245.881 akun" -> 245881
+ let digits=s.replace(/[^0-9]/g,'');
+ return digits ? parseInt(digits,10) : 0;
 }
 function formatNum(n){ if(n>=1e6) return (n/1e6).toFixed(2)+'M'; if(n>=1e3) return (n/1e3).toFixed(1)+'K'; return n.toLocaleString('id-ID'); }
 function calcER(i,j){ if(!j||!i) return 0; return i/j*100; }
 function formatPercent(v){ if(v>=10) return v.toFixed(1)+'%'; if(v>=1) return v.toFixed(2)+'%'; if(v>0) return v.toFixed(3)+'%'; return '—'; }
-function normalizeBrand(b){
- b=String(b).trim().toLowerCase();
- if(b.includes('labbaik')) return 'Labbaik Chicken';
- if(b==='ofc' || b.includes('oven')) return 'OFC';
- if(b.includes('sedjati eco') || b==='sef' || (b.includes('eco') && b.includes('farm'))) return 'SEF';
- if(b.includes('petani') || b==='psm' || b.includes('mandiri')) return 'PSM';
- if(b.includes('sedjati coffee') || b.includes('sedjati cofee') || b==='sedjati' || (b.includes('sedjati') && !b.includes('eco') && !b.includes('petani'))) return 'Sedjati Coffee';
- if(b.includes('baso') || b.includes('kajojo')) return 'Baso Kajojo';
- if(b.includes('spud')) return 'Spud Potata';
- if(b.includes('obie') || b.includes('donat') || b.includes('donut')) return 'Obie Donat';
- if(b.includes('waydee')) return 'Waydee';
- if(b.includes('luqman') || b==='lh') return 'Luqman Hakim';
- return b.toUpperCase();
-}
-function normalizePlatform(p){
- if(!p) return '—';
- p=String(p).trim().toLowerCase();
- if(p.includes('ig')||p.includes('insta')) return 'IG';
- if(p.includes('tiktok')||p==='tt') return 'TikTok';
- if(p.includes('thread')) return 'Threads';
- if(p.includes('yt')||p.includes('you')) return 'YouTube';
- if(p.includes('fb')||p.includes('face')) return 'Facebook';
- return p.toUpperCase();
+
+function parseBrandAndPlatform(rawBrand, rawPlatform){
+ let brand = String(rawBrand||'').trim();
+ let platform = String(rawPlatform||'').trim();
+ // Jika user ngetik "Sedjati EcoFarm IG" di kolom Brand, pisahkan
+ const parts = brand.split(/\s+/);
+ const last = parts[parts.length-1].toUpperCase();
+ if(['IG','TIKTOK','TT','YT','YOUTUBE','FB','FACEBOOK','THREADS'].includes(last)){
+   platform = last;
+   brand = parts.slice(0,-1).join(' ');
+ }
+ // Normalize platform
+ let pLower = platform.toLowerCase();
+ if(pLower.includes('ig')||pLower.includes('insta')) platform='IG';
+ else if(pLower.includes('tiktok')||pLower==='tt') platform='TikTok';
+ else if(pLower.includes('thread')) platform='Threads';
+ else if(pLower.includes('yt')||pLower.includes('you')) platform='YouTube';
+ else if(pLower.includes('fb')||pLower.includes('face')) platform='Facebook';
+ else if(platform==='') platform='—';
+ // Normalize brand
+ let bLower = brand.toLowerCase();
+ let group='';
+ if(bLower.includes('labbaik')) group='Labbaik Chicken';
+ else if(bLower==='ofc'||bLower.includes('oven')) group='OFC';
+ else if(bLower.includes('sedjati eco')||bLower==='sef') group='SEF';
+ else if(bLower.includes('petani')||bLower==='psm') group='PSM';
+ else if(bLower.includes('sedjati coffee')||bLower.includes('sedjati cofee')||bLower==='sedjati'|| (bLower.includes('sedjati')&&!bLower.includes('eco'))) group='Sedjati Coffee';
+ else if(bLower.includes('baso')||bLower.includes('kajojo')) group='Baso Kajojo';
+ else if(bLower.includes('spud')) group='Spud Potata';
+ else if(bLower.includes('obie')||bLower.includes('donat')||bLower.includes('donut')) group='Obie Donat';
+ else if(bLower.includes('waydee')) group='Waydee';
+ else if(bLower.includes('luqman')||bLower==='lh') group='Luqman Hakim';
+ else group=brand.toUpperCase();
+ return {brandRaw: brand, brandGroup: group, platform};
 }
 
 async function loadData(){
- try{
-  const res=await fetch(CSV_URL);
-  const csv=await res.text();
-  const parsed=Papa.parse(csv,{header:true,skipEmptyLines:'greedy',trimHeader:true});
-  const rows=parsed.data.map(r=>{ const c={}; Object.keys(r).forEach(k=> c[k.trim()]=r[k]); return c; });
-  allData=rows.map(r=>{
-    const brandRaw=(r['Brand']||'').trim();
-    if(!brandRaw) return null;
-    // Support both old and new column names
-    const tayangan = toNum(r['Tayangan'] ?? r['Reach'] ?? r['Jangkauan'] ?? 0);
-    const jangkauan = toNum(r['Jangkauan'] ?? r['Reach'] ?? 0);
-    const interaksi = toNum(r['Interaksi'] ?? r['Engagement'] ?? 0);
-    const klik = toNum(r['Klik Tautan'] ?? r['Klik'] ?? 0);
-    const kunjungan = toNum(r['Kunjungan'] ?? 0);
-    const pengikut = toNum(r['Pengikut'] ?? r['Followers'] ?? 0);
-    return {
-      waktu:(r['Waktu Push']||'').trim(),
-      brandRaw,
-      brand: normalizeBrand(brandRaw),
-      platform: normalizePlatform(r['Platform']||''),
-      platformRaw:(r['Platform']||'').trim(),
-      periode:(r['Periode']||'').trim(),
-      tayangan, tayanganRaw:(r['Tayangan']||r['Reach']||'').toString().trim(),
-      jangkauan, jangkauanRaw:(r['Jangkauan']||r['Reach']||'').toString().trim(),
-      interaksi, interaksiRaw:(r['Interaksi']||r['Engagement']||'').toString().trim(),
-      klik, klikRaw:(r['Klik Tautan']||'').toString().trim(),
-      kunjungan, kunjunganRaw:(r['Kunjungan']||'').toString().trim(),
-      pengikut, pengikutRaw:(r['Pengikut']||r['Followers']||'').toString().trim(),
-    };
-  }).filter(Boolean);
-  allData.sort((a,b)=> a.waktu.localeCompare(b.waktu));
-  updateBrands(); updateView();
-  document.getElementById('status').textContent=`OK - ${allData.length} baris | Kolom: ${Object.keys(rows[0]||{}).join(', ')} | Brand: ${[...new Set(allData.map(x=>x.brand))].join(', ')}`;
- }catch(e){ document.getElementById('status').textContent='Error: '+e.message; }
+ let lastError='';
+ for(let url of CSV_URLS){
+  try{
+   document.getElementById('status').textContent='Fetching: '+url.substring(0,80)+'...';
+   const res=await fetch(url);
+   if(!res.ok) throw new Error('HTTP '+res.status);
+   const csv=await res.text();
+   if(csv.length<10) throw new Error('CSV kosong');
+   const parsed=Papa.parse(csv,{header:true,skipEmptyLines:'greedy',trimHeader:true});
+   if(!parsed.data || parsed.data.length===0) throw new Error('No data');
+   const rows=parsed.data.map(r=>{ const c={}; Object.keys(r).forEach(k=> c[k.trim()]=r[k]); return c; });
+   // detect header names
+   const sampleKeys=Object.keys(rows[0]||{}).join(', ');
+   allData=rows.map(r=>{
+     const waktu=(r['Waktu Push']||r['ush']||r['Waktu']||'').toString().trim();
+     const brandRawOrig=(r['Brand']||'').toString().trim();
+     const platOrig=(r['Platform']||'').toString().trim();
+     if(!brandRawOrig) return null;
+     const {brandRaw, brandGroup, platform}=parseBrandAndPlatform(brandRawOrig, platOrig);
+     const periode=(r['Periode']||'').toString().trim();
+     const tayangan=toNum(r['Tayangan']||r['Reach']||'');
+     const jangkauan=toNum(r['Jangkauan']||r['Reach']||'');
+     const interaksi=toNum(r['Interaksi']||r['Engagement']||'');
+     const klik=toNum(r['Klik Tautan']||r['Klik']||'');
+     const kunjungan=toNum(r['Kunjungan']||'');
+     const pengikut=toNum(r['Pengikut']||r['Followers']||'');
+     return {
+       waktu, brandRaw, brand: brandGroup, platform, platformRaw: platOrig||platform,
+       periode,
+       tayangan, tayanganRaw:(r['Tayangan']||'').toString(),
+       jangkauan, jangkauanRaw:(r['Jangkauan']||'').toString(),
+       interaksi, interaksiRaw:(r['Interaksi']||'').toString(),
+       klik, klikRaw:(r['Klik Tautan']||'').toString(),
+       kunjungan, kunjunganRaw:(r['Kunjungan']||'').toString(),
+       pengikut, pengikutRaw:(r['Pengikut']||'').toString(),
+     };
+   }).filter(Boolean);
+   if(allData.length===0) throw new Error('Hasil parse 0 baris');
+   allData.sort((a,b)=> a.waktu.localeCompare(b.waktu));
+   updateBrands(); updateView();
+   document.getElementById('status').textContent=`OK - ${allData.length} baris dari ${url.includes('1YGJg')?'Sheet BARU (1YGJg...)':'Sheet LAMA'} | Kolom: ${sampleKeys} | Brand: ${[...new Set(allData.map(x=>x.brand))].join(', ')}`;
+   return;
+  }catch(e){ lastError=e.message; console.log('fail',url,e); }
+ }
+ document.getElementById('status').textContent='Gagal semua sumber: '+lastError+' - Pastikan Sheet di-publish: File > Share > Publish to web > Link, Entire Document, CSV';
 }
+
 function updateBrands(){
  const brands=[...new Set(allData.map(r=>r.brand))].sort();
  document.getElementById('brandFilter').innerHTML='<option value="">Semua Brand</option>'+brands.map(b=>`<option value="${b}">${b}</option>`).join('');
  const plats=[...new Set(allData.map(r=>r.platform).filter(p=>p && p!=='—'))].sort();
  if(plats.length>0){
-   const base=['IG','TikTok','Threads','YouTube','Facebook'];
-   const all=[...new Set([...base,...plats])];
-   document.getElementById('platformFilter').innerHTML='<option value="">Semua Platform</option>'+all.map(p=>`<option value="${p}">${p}</option>`).join('');
+   document.getElementById('platformFilter').innerHTML='<option value="">Semua Platform</option>'+plats.map(p=>`<option value="${p}">${p}</option>`).join('');
  }
 }
 function parseDate(w){ try{ const d=w.split(' ')[0]; const [day,m,y]=d.split('/'); return `${y}-${m}-${day}`;}catch{return ''} }
@@ -226,85 +210,63 @@ function updateView(){
  const latestMap={};
  Object.keys(grouped).forEach(k=>{
   const arr=grouped[k].slice().reverse();
-  latestMap[k]={
-   brand:k,
-   tayangan:arr.find(x=>x.tayangan>0)?.tayangan||0,
-   jangkauan:arr.find(x=>x.jangkauan>0)?.jangkauan||0,
-   interaksi:arr.find(x=>x.interaksi>0)?.interaksi||0,
-   klik:arr.find(x=>x.klik>0)?.klik||0,
-   kunjungan:arr.find(x=>x.kunjungan>0)?.kunjungan||0,
-   pengikut:arr.find(x=>x.pengikut>0)?.pengikut||0,
-  };
+  latestMap[k]={ brand:k, tayangan:arr.find(x=>x.tayangan>0)?.tayangan||0, jangkauan:arr.find(x=>x.jangkauan>0)?.jangkauan||0, interaksi:arr.find(x=>x.interaksi>0)?.interaksi||0, klik:arr.find(x=>x.klik>0)?.klik||0, kunjungan:arr.find(x=>x.kunjungan>0)?.kunjungan||0, pengikut:arr.find(x=>x.pengikut>0)?.pengikut||0 };
  });
  const latestArr=Object.values(latestMap);
- const sum = (key)=> latestArr.reduce((s,r)=>s+r[key],0);
+ const sum=k=> latestArr.reduce((s,r)=>s+r[k],0);
  document.getElementById('kpiTayangan').textContent=formatNum(sum('tayangan'));
  document.getElementById('kpiJangkauan').textContent=formatNum(sum('jangkauan'));
  document.getElementById('kpiInteraksi').textContent=formatNum(sum('interaksi'));
  document.getElementById('kpiKunjungan').textContent=formatNum(sum('kunjungan'));
  document.getElementById('kpiPengikut').textContent=formatNum(sum('pengikut'));
  document.getElementById('kpiKlik').textContent=formatNum(sum('klik'));
- document.getElementById('kpiER').textContent=formatPercent(calcER(sum('interaksi'), sum('jangkauan')));
- document.getElementById('kpiERSub').textContent=`${formatPercent(calcER(sum('interaksi'), sum('jangkauan')))} dari Jangkauan`;
+ document.getElementById('kpiER').textContent=formatPercent(calcER(sum('interaksi'),sum('jangkauan')));
+ document.getElementById('kpiERSub').textContent=formatPercent(calcER(sum('interaksi'),sum('jangkauan')));
  document.getElementById('kpiPosts').textContent=data.length;
- const by = (k)=> { const o={}; latestArr.forEach(r=>o[r.brand]=r[k]); return o; };
+ const by=k=>{ const o={}; latestArr.forEach(r=>o[r.brand]=r[k]); return o; };
  drawChart('chartTayangan',Object.keys(by('tayangan')),Object.values(by('tayangan')));
  drawChart('chartJangkauan',Object.keys(by('jangkauan')),Object.values(by('jangkauan')));
  drawChart('chartInteraksi',Object.keys(by('interaksi')),Object.values(by('interaksi')));
- const erMap={}; latestArr.forEach(r=>erMap[r.brand]=calcER(r.interaksi,r.jangkauan));
- drawChart('chartER',Object.keys(erMap),Object.values(erMap),true);
- const kunjMap={}; latestArr.forEach(r=>kunjMap[r.brand]=r.kunjungan);
- drawChart('chartKunjungan',Object.keys(kunjMap),Object.values(kunjMap));
+ const erM={}; latestArr.forEach(r=>erM[r.brand]=calcER(r.interaksi,r.jangkauan));
+ drawChart('chartER',Object.keys(erM),Object.values(erM),true);
  renderTable();
 }
 function renderTable(){
  const data=getFiltered().slice().reverse();
- const total=data.length;
- const totalPages=Math.ceil(total/pageSize);
+ const total=data.length; const totalPages=Math.ceil(total/pageSize);
  if(currentPage>totalPages) currentPage=totalPages||1;
- const start=(currentPage-1)*pageSize;
- const end=Math.min(start+pageSize,total);
+ const start=(currentPage-1)*pageSize; const end=Math.min(start+pageSize,total);
  const pageData=data.slice(start,end);
- document.getElementById('tableInfo').textContent=`Menampilkan ${total?start+1:0}-${end} dari ${total} (halaman ${currentPage}/${totalPages||1})`;
+ document.getElementById('tableInfo').textContent=`${total?start+1:0}-${end} dari ${total} (hal ${currentPage}/${totalPages||1})`;
  document.getElementById('tableBody').innerHTML=pageData.map(r=>{
   const er=calcER(r.interaksi,r.jangkauan);
-  return `<tr>
-   <td>${r.waktu}</td><td>${r.brandRaw}</td><td><span class="badge">${r.brand}</span></td><td>${r.platform}</td><td>${r.periode}</td>
-   <td>${r.tayanganRaw||'—'}</td><td>${r.jangkauanRaw||'—'}</td><td>${r.interaksiRaw||'—'}</td><td>${r.klikRaw||'—'}</td><td>${r.kunjunganRaw||'—'}</td><td>${r.pengikutRaw||'—'}</td>
-   <td style="color:${er>1?'#4caf50':'#888'}">${formatPercent(er)}</td>
-  </tr>`;
+  return `<tr><td>${r.waktu}</td><td>${r.brandRaw}</td><td><span class="badge">${r.brand}</span></td><td>${r.platform}</td><td>${r.periode}</td><td>${r.tayanganRaw||r.tayangan||'—'}</td><td>${r.jangkauanRaw||r.jangkauan||'—'}</td><td>${r.interaksiRaw||r.interaksi||'—'}</td><td>${r.klikRaw||'—'}</td><td>${r.kunjunganRaw||'—'}</td><td>${r.pengikutRaw||'—'}</td><td>${formatPercent(er)}</td></tr>`;
  }).join('');
  const pag=document.getElementById('pagination');
  let html=`<button ${currentPage===1?'disabled':''} onclick="changePage(-1)">‹ Prev</button>`;
  for(let i=1;i<=Math.min(totalPages,10);i++) html+=`<button class="${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
- if(totalPages>10) html+=`<span style="color:#666;font-size:11px">... ${totalPages}</span>`;
- html+=`<button ${currentPage===totalPages||totalPages===0?'disabled':''} onclick="changePage(1)">Next ›</button>`;
+ if(totalPages>10) html+=`<span style="color:#666;font-size:10px">... ${totalPages}</span>`;
+ html+=`<button ${currentPage===totalPages||0?'disabled':''} onclick="changePage(1)">Next ›</button>`;
  pag.innerHTML=html;
 }
 function changePage(d){ currentPage+=d; renderTable(); }
 function goPage(p){ currentPage=p; renderTable(); }
 function drawChart(id,labels,data,isPercent=false){
  if(charts[id]) charts[id].destroy();
- const colors={chartTayangan:'#4a9eff',chartJangkauan:'#ff9800',chartInteraksi:'#9c27b0',chartER:'#4caf50',chartKunjungan:'#00bcd4'};
- charts[id]=new Chart(document.getElementById(id),{
-  type:'bar',
-  data:{labels,datasets:[{data,backgroundColor:colors[id]||'#4a9eff'}]},
-  options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=> isPercent? formatPercent(c.parsed.y) : formatNum(c.parsed.y)}}},scales:{x:{ticks:{color:'#888',maxRotation:40},grid:{color:'#222'}},y:{ticks:{color:'#888',callback:v=> isPercent? v+'%' : formatNum(v)},grid:{color:'#222'}}}}
- });
+ const colors={chartTayangan:'#4a9eff',chartJangkauan:'#ff9800',chartInteraksi:'#9c27b0',chartER:'#4caf50'};
+ charts[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:[{data,backgroundColor:colors[id]||'#4a9eff'}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=> isPercent? formatPercent(c.parsed.y):formatNum(c.parsed.y)}}},scales:{x:{ticks:{color:'#888',maxRotation:40},grid:{color:'#222'}},y:{ticks:{color:'#888',callback:v=> isPercent? v+'%':formatNum(v)},grid:{color:'#222'}}}}});
 }
 document.getElementById('btnGenerate').addEventListener('click',()=>{
- const data=getFiltered();
- const grouped={}; data.forEach(r=>{ const k=r.brand; if(!grouped[k]) grouped[k]=[]; grouped[k].push(r); });
- let report=`LAPORAN IG INSIGHT - ${new Date().toLocaleString('id-ID')}\nFilter: Brand=${document.getElementById('brandFilter').value||'Semua'} | Platform=${document.getElementById('platformFilter').value||'Semua'} | Baris=${data.length}\n========================================\n\n`;
- let totT=0,totJ=0,totI=0,totKunj=0,totPeng=0,totKlik=0;
+ const data=getFiltered(); const grouped={}; data.forEach(r=>{ const k=r.brand; if(!grouped[k]) grouped[k]=[]; grouped[k].push(r); });
+ let report=`LAPORAN IG INSIGHT - ${new Date().toLocaleString('id-ID')}\nFilter: Brand=${document.getElementById('brandFilter').value||'Semua'} | Platform=${document.getElementById('platformFilter').value||'Semua'}\n========================================\n\n`;
+ let tot={tayangan:0,jangkauan:0,interaksi:0,kunjungan:0,pengikut:0,klik:0};
  Object.keys(grouped).sort().forEach(k=>{
   const arr=grouped[k].slice().reverse();
-  const t=arr.find(x=>x.tayangan>0)?.tayangan||0; const j=arr.find(x=>x.jangkauan>0)?.jangkauan||0; const i=arr.find(x=>x.interaksi>0)?.interaksi||0;
-  const klik=arr.find(x=>x.klik>0)?.klik||0; const kunj=arr.find(x=>x.kunjungan>0)?.kunjungan||0; const peng=arr.find(x=>x.pengikut>0)?.pengikut||0;
-  totT+=t; totJ+=j; totI+=i; totKunj+=kunj; totPeng+=peng; totKlik+=klik;
-  report+=`${k}\n  Tayangan: ${t.toLocaleString('id-ID')} | Jangkauan: ${j.toLocaleString('id-ID')} | Interaksi: ${i.toLocaleString('id-ID')} | ER: ${formatPercent(calcER(i,j))}\n  Klik: ${klik} | Kunjungan: ${kunj} | Pengikut: ${peng}\n  Last: ${arr[0].waktu} | Periode: ${arr[0].periode}\n\n`;
+  const t=arr.find(x=>x.tayangan>0)?.tayangan||0; const j=arr.find(x=>x.jangkauan>0)?.jangkauan||0; const i=arr.find(x=>x.interaksi>0)?.interaksi||0; const klik=arr.find(x=>x.klik>0)?.klik||0; const kunj=arr.find(x=>x.kunjungan>0)?.kunjungan||0; const peng=arr.find(x=>x.pengikut>0)?.pengikut||0;
+  tot.tayangan+=t; tot.jangkauan+=j; tot.interaksi+=i; tot.kunjungan+=kunj; tot.pengikut+=peng; tot.klik+=klik;
+  report+=`${k} (${arr[0].platform})\n  Tayangan: ${t} | Jangkauan: ${j} | Interaksi: ${i} | ER: ${formatPercent(calcER(i,j))}\n  Klik: ${klik} | Kunjungan: ${kunj} | Pengikut: ${peng}\n  Last: ${arr[0].waktu}\n\n`;
  });
- report+=`========================================\nTOTAL Tayangan: ${totT.toLocaleString('id-ID')}\nTOTAL Jangkauan: ${totJ.toLocaleString('id-ID')}\nTOTAL Interaksi: ${totI.toLocaleString('id-ID')}\nTOTAL Kunjungan: ${totKunj.toLocaleString('id-ID')}\nTOTAL Pengikut: ${totPeng.toLocaleString('id-ID')}\nAVG ER: ${formatPercent(calcER(totI,totJ))}\n`;
+ report+=`========================================\nTOTAL Tayangan: ${tot.tayangan}\nTOTAL Jangkauan: ${tot.jangkauan}\nTOTAL Interaksi: ${tot.interaksi}\nAVG ER: ${formatPercent(calcER(tot.interaksi,tot.jangkauan))}\n`;
  document.getElementById('reportText').textContent=report;
  document.getElementById('reportModal').classList.add('show');
 });
