@@ -38,15 +38,19 @@ th{background:#222;color:#aaa;font-weight:600}
 <div class="kpis">
 <div class="kpi"><div class="kpi-label">Total Followers</div><div class="kpi-value" id="kpiFollowers">0</div></div>
 <div class="kpi"><div class="kpi-label">Total Reach</div><div class="kpi-value" id="kpiReach">0</div></div>
-<div class="kpi"><div class="kpi-label">Total Engagement</div><div class="kpi-value" id="kpiEng">0</div></div>
-<div class="kpi"><div class="kpi-label">Total Data</div><div class="kpi-value" id="kpiPosts">0</div></div>
+<div class="kpi"><div class="kpi-label">Total Engagement</div><div class="kpi-value" id="kpiEng">0</div><div class="kpi-sub" id="kpiEngRaw" style="font-size:12px;color:#666;margin-top:4px"></div></div>
+<div class="kpi"><div class="kpi-label">Avg ER (Engagement Rate)</div><div class="kpi-value" id="kpiER">0%</div><div class="kpi-sub" style="font-size:12px;color:#666;margin-top:4px">Eng / Reach</div></div>
+</div>
+<div class="kpis" style="margin-top:0">
+<div class="kpi" style="padding:12px 20px"><div class="kpi-label">Total Data</div><div class="kpi-value" style="font-size:20px" id="kpiPosts">0</div></div>
 </div>
 <div class="charts">
 <div class="chart-box"><div class="chart-title">Followers by Brand (Latest Valid)</div><canvas id="chartBrand"></canvas></div>
 <div class="chart-box"><div class="chart-title">Reach by Brand (Latest Valid)</div><canvas id="chartReach"></canvas></div>
+<div class="chart-box"><div class="chart-title">ER by Brand (%) - Higher is Better</div><canvas id="chartER"></canvas></div>
 </div>
 <table>
-<thead><tr><th>Waktu Push</th><th>Brand</th><th>Periode</th><th>Reach</th><th>Engagement</th><th>Followers</th></tr></thead>
+<thead><tr><th>Waktu Push</th><th>Brand</th><th>Periode</th><th>Reach</th><th>Engagement</th><th>Followers</th><th>ER %</th></tr></thead>
 <tbody id="tableBody"></tbody>
 </table>
 <div class="debug" id="debug"></div>
@@ -69,6 +73,15 @@ function formatNum(n){
  if(n>=1e6) return (n/1e6).toFixed(1)+'M';
  if(n>=1e3) return (n/1e3).toFixed(1)+'K';
  return n.toLocaleString('id-ID');
+}
+function calcER(eng, reach){
+ if(!reach || !eng) return 0;
+ return (eng / reach * 100);
+}
+function formatPercent(v){
+ if(v>=10) return v.toFixed(1)+'%';
+ if(v>=1) return v.toFixed(2)+'%';
+ return v.toFixed(3)+'%';
 }
 function normalizeBrand(b){
  b=String(b).trim().toLowerCase();
@@ -154,38 +167,61 @@ function getFiltered(){
 }
 function updateView(){
  const data=getFiltered();
- // Ambil latest valid per brand: cari dari belakang yang ada angkanya
- const latest={};
+ // Ambil latest VALID per metrik per brand
  const grouped={};
  data.forEach(r=>{
   if(!grouped[r.brand]) grouped[r.brand]=[];
   grouped[r.brand].push(r);
  });
+
+ const latestMap={}; // brand -> { followers, reach, engagement, latestRow }
  Object.keys(grouped).forEach(brand=>{
   const arr = grouped[brand].slice().reverse(); // terbaru dulu
-  let found = arr.find(x=> x.followers>0 || x.reach>0 || x.engagement>0);
-  if(!found) found = arr[0]; // kalau semua 0, ambil yang terbaru aja
-  if(found) latest[brand]=found;
+  const latestRow = arr[0];
+  const latestFollowers = arr.find(x=> x.followers>0)?.followers || 0;
+  const latestReach = arr.find(x=> x.reach>0)?.reach || 0;
+  const latestEng = arr.find(x=> x.engagement>0)?.engagement || 0;
+  const latestReachRaw = arr.find(x=> x.reach>0)?.reachRaw || latestRow.reachRaw;
+  const latestFollRaw = arr.find(x=> x.followers>0)?.follRaw || latestRow.follRaw;
+  const latestEngRaw = arr.find(x=> x.engagement>0)?.engRaw || latestRow.engRaw;
+  latestMap[brand]={
+   waktu: latestRow.waktu,
+   periode: latestRow.periode,
+   brand: brand,
+   followers: latestFollowers,
+   reach: latestReach,
+   engagement: latestEng,
+   reachRaw: latestReachRaw,
+   follRaw: latestFollRaw,
+   engRaw: latestEngRaw,
+   _latestRow: latestRow
+  };
  });
 
- const latestArr=Object.values(latest);
+ const latestArr=Object.values(latestMap);
  
  const totalFollowers = latestArr.reduce((s,r)=>s+r.followers,0);
  const totalReach = latestArr.reduce((s,r)=>s+r.reach,0);
  const totalEng = latestArr.reduce((s,r)=>s+r.engagement,0);
+ const avgER = totalReach>0? calcER(totalEng, totalReach) : 0;
 
  document.getElementById('kpiFollowers').textContent=formatNum(totalFollowers);
  document.getElementById('kpiReach').textContent=formatNum(totalReach);
  document.getElementById('kpiEng').textContent=formatNum(totalEng);
+ document.getElementById('kpiEngRaw').textContent= totalReach>0 ? `${formatPercent(avgER)} dari Reach` : '';
+ document.getElementById('kpiER').textContent=formatPercent(avgER);
  document.getElementById('kpiPosts').textContent=data.length;
 
  const byFollowers={}; latestArr.forEach(r=>byFollowers[r.brand]=r.followers);
  const byReach={}; latestArr.forEach(r=>byReach[r.brand]=r.reach);
+ const byER={}; latestArr.forEach(r=>byER[r.brand]= calcER(r.engagement, r.reach));
 
  drawChart('chartBrand',Object.keys(byFollowers),Object.values(byFollowers));
  drawChart('chartReach',Object.keys(byReach),Object.values(byReach));
+ drawChart('chartER',Object.keys(byER),Object.values(byER), true);
 
  document.getElementById('tableBody').innerHTML=data.slice().reverse().slice(0,100).map(r=>{
+  const er = calcER(r.engagement, r.reach);
   return `<tr>
     <td>${r.waktu}</td>
     <td>${r.brand}</td>
@@ -193,16 +229,41 @@ function updateView(){
     <td>${r.reachRaw||0}</td>
     <td>${r.engRaw||0}</td>
     <td>${r.follRaw||0}</td>
+    <td style="color:${er>1?'#4caf50':'#888'}">${er>0?formatPercent(er):'—'}</td>
   </tr>`;
  }).join('');
 }
 
-function drawChart(id,labels,data){
+function drawChart(id,labels,data, isPercent=false){
  if(charts[id]) charts[id].destroy();
+ const bg = id==='chartER' ? '#4caf50' : '#4a9eff';
  charts[id]=new Chart(document.getElementById(id),{
   type:'bar',
-  data:{labels,datasets:[{label:'value',data,backgroundColor:'#4a9eff'}]},
-  options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#888',maxRotation:45},grid:{color:'#333'}},y:{ticks:{color:'#888'},grid:{color:'#333'}}}}
+  data:{labels,datasets:[{label:isPercent?'ER %':'value',data,backgroundColor:bg}]},
+  options:{
+    responsive:true,
+    plugins:{
+      legend:{display:false},
+      tooltip:{
+        callbacks:{
+          label: (ctx)=>{
+            if(isPercent) return formatPercent(ctx.parsed.y);
+            return formatNum(ctx.parsed.y);
+          }
+        }
+      }
+    },
+    scales:{
+      x:{ticks:{color:'#888',maxRotation:45},grid:{color:'#333'}},
+      y:{
+        ticks:{
+          color:'#888',
+          callback: function(val){ return isPercent ? val+'%' : formatNum(val); }
+        },
+        grid:{color:'#333'}
+      }
+    }
+  }
  });
 }
 
