@@ -11,7 +11,7 @@
 body{font-family:-apple-system,sans-serif;background:#0a0a0a;color:#fff;padding:20px}
 .container{max-width:1400px;margin:0 auto}
 h1{font-size:28px;margin-bottom:8px}
-.subtitle{color:#666;font-size:14px;margin-bottom:20px}
+.subtitle{color:#4caf50;font-size:14px;margin-bottom:20px}
 .filters{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap}
 .filters select,.filters input{background:#1a1a1a;border:1px solid #333;color:#fff;padding:8px 12px;border-radius:6px}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
@@ -24,6 +24,7 @@ h1{font-size:28px;margin-bottom:8px}
 table{width:100%;background:#1a1a1a;border-collapse:collapse;border-radius:8px;overflow:hidden}
 th,td{padding:12px;text-align:left;border-bottom:1px solid #333;font-size:14px}
 th{background:#222;color:#aaa;font-weight:600}
+.debug{margin-top:20px;padding:12px;background:#1a1a1a;border-radius:6px;font-size:12px;color:#888;white-space:pre-wrap}
 </style>
 </head>
 <body>
@@ -31,8 +32,7 @@ th{background:#222;color:#aaa;font-weight:600}
 <h1>Dashboard Sosmed</h1>
 <div class="subtitle" id="status">Loading data dari Google Sheet...</div>
 <div class="filters">
-<input type="date" id="startDate">
-<input type="date" id="endDate">
+<input type="date" id="startDate"><input type="date" id="endDate">
 <select id="brandFilter"><option value="">Semua Brand</option></select>
 </div>
 <div class="kpis">
@@ -49,17 +49,21 @@ th{background:#222;color:#aaa;font-weight:600}
 <thead><tr><th>Waktu Push</th><th>Brand</th><th>Periode</th><th>Reach</th><th>Engagement</th><th>Followers</th></tr></thead>
 <tbody id="tableBody"></tbody>
 </table>
+<div class="debug" id="debug"></div>
 </div>
 <script>
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAEUueYms0SnC-JXracRWmYLZ55VqptcgNGGpAWpnMqIQU7oFhd8KWO4ZXr85ZzOLvfBQX0I9aLEHr/pub?gid=269503424&single=true&output=csv';
-let allData = []; let charts = {};
+const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQAEUueYms0SnC-JXracRWmYLZ55VqptcgNGGpAWpnMqIQU7oFhd8KWO4ZXr85ZzOLvfBQX0I9aLEHr/pub?gid=269503424&single=true&output=csv';
+let allData=[], charts={};
+
 function toNum(v){
- if(!v) return 0;
+ if(v===null||v===undefined) return 0;
  let s=String(v).trim();
- if(s==='—'||s==='-'||s==='' ) return 0;
+ if(s===''||s==='—'||s==='-'||s==='–') return 0;
+ // contoh: "245.881 akun" -> "245881", "1.077 per Reels" -> "1077", "❗581" -> "581"
  s=s.split('(')[0];
- s=s.replace(/[^\d]/g,'');
- return parseInt(s)||0;
+ s=s.replace(/[^0-9]/g,'');
+ if(s==='') return 0;
+ return parseInt(s,10)||0;
 }
 function formatNum(n){
  if(n>=1e6) return (n/1e6).toFixed(1)+'M';
@@ -67,11 +71,11 @@ function formatNum(n){
  return n.toLocaleString('id-ID');
 }
 function normalizeBrand(b){
- b=b.trim().toLowerCase();
+ b=String(b).trim().toLowerCase();
  if(b.includes('sedjati eco')) return 'SEF';
  if(b.includes('labbaik')) return 'Labbaik Chicken';
  if(b.includes('waydee')) return 'Waydee';
- if(b.includes('sedjati coffee')||b.includes('sedjati coffe')) return 'Sedjati Coffee';
+ if(b.includes('sedjati coffe')) return 'Sedjati Coffee';
  if(b.includes('luqman')||b==='lh') return 'LH';
  if(b.includes('baso')) return 'Baso Kajojo';
  if(b.includes('spud')) return 'Spud Potata';
@@ -79,33 +83,56 @@ function normalizeBrand(b){
  if(b==='ofc') return 'OFC';
  return b.toUpperCase();
 }
+
 async function loadData(){
  try{
+  document.getElementById('status').textContent='Fetching...';
   const res=await fetch(CSV_URL);
+  if(!res.ok) throw new Error('Fetch failed '+res.status);
   const csv=await res.text();
-  const parsed=Papa.parse(csv,{header:true,skipEmptyLines:'greedy'});
-  allData=parsed.data.map(r=>{
-   const brandKey=Object.keys(r).find(k=>k.trim().toLowerCase()==='brand')||'Brand';
-   const rawBrand=(r[brandKey]||'').trim();
-   if(!rawBrand) return null;
-   return {
-    waktu:r['Waktu Push']||'',
-    brandRaw:rawBrand,
-    brand:normalizeBrand(rawBrand),
-    periode:r['Periode']||'',
-    reach:toNum(r['Reach']),
-    engagement:toNum(r['Engagement']),
-    followers:toNum(r['Followers']),
-    reachRaw:r['Reach']||'',
-    engRaw:r['Engagement']||'',
-    follRaw:r['Followers']||'',
-   };
+  document.getElementById('debug').textContent='CSV preview (200 char): '+csv.substring(0,300);
+  
+  const parsed=Papa.parse(csv,{header:true,skipEmptyLines:'greedy',trimHeader:true});
+  // Normalize header: trim all keys
+  const rawData = parsed.data.map(row=>{
+    const cleanRow={};
+    Object.keys(row).forEach(k=>{
+      const cleanKey=k.trim();
+      cleanRow[cleanKey]=row[k];
+    });
+    return cleanRow;
+  });
+
+  allData = rawData.map(r=>{
+    const brandRaw = (r['Brand']||'').trim();
+    if(!brandRaw) return null;
+    return {
+      waktu: (r['Waktu Push']||'').trim(),
+      brandRaw: brandRaw,
+      brand: normalizeBrand(brandRaw),
+      periode: (r['Periode']||'').trim(),
+      reach: toNum(r['Reach']),
+      engagement: toNum(r['Engagement']),
+      followers: toNum(r['Followers']),
+      reachRaw: (r['Reach']||'').trim(),
+      engRaw: (r['Engagement']||'').trim(),
+      follRaw: (r['Followers']||'').trim(),
+    };
   }).filter(Boolean);
-  allData.sort((a,b)=> a.waktu>b.waktu?1:-1);
-  updateBrands(); updateView();
-  document.getElementById('status').textContent=`Data update: ${new Date().toLocaleString('id-ID')} | ${allData.length} baris`;
- }catch(e){ document.getElementById('status').textContent='Error: '+e; }
+
+  // Sort ascending by waktu string, then later reverse
+  allData.sort((a,b)=> a.waktu.localeCompare(b.waktu));
+
+  updateBrands(); 
+  updateView();
+  document.getElementById('status').textContent=`Data update: ${new Date().toLocaleString('id-ID')} | ${allData.length} baris | valid: ${allData.filter(x=>x.followers>0||x.reach>0).length}`;
+
+ }catch(e){
+  document.getElementById('status').textContent='Error: '+e.message;
+  document.getElementById('debug').textContent=e.stack;
+ }
 }
+
 function updateBrands(){
  const brands=[...new Set(allData.map(r=>r.brand))].sort();
  document.getElementById('brandFilter').innerHTML='<option value="">Semua Brand</option>'+brands.map(b=>`<option value="${b}">${b}</option>`).join('');
@@ -119,45 +146,66 @@ function getFiltered(){
  const brand=document.getElementById('brandFilter').value;
  return allData.filter(r=>{
   const rDate=parseDateFromWaktu(r.waktu);
-  if(sDate&&rDate<sDate) return false;
-  if(eDate&&rDate>eDate) return false;
+  if(sDate&&rDate&&rDate<sDate) return false;
+  if(eDate&&rDate&&rDate>eDate) return false;
   if(brand&&r.brand!==brand) return false;
   return true;
  });
 }
 function updateView(){
  const data=getFiltered();
+ // Ambil latest valid per brand: cari dari belakang yang ada angkanya
  const latest={};
- [...data].reverse().forEach(r=>{
-  if(!latest[r.brand]){ latest[r.brand]=r; }
-  else {
-   const cur=latest[r.brand];
-   if((cur.followers===0&&r.followers>0)||(cur.reach===0&&r.reach>0)||(cur.engagement===0&&r.engagement>0)){
-    if(r.followers>0||r.reach>0) latest[r.brand]=r;
-   }
-  }
+ const grouped={};
+ data.forEach(r=>{
+  if(!grouped[r.brand]) grouped[r.brand]=[];
+  grouped[r.brand].push(r);
  });
+ Object.keys(grouped).forEach(brand=>{
+  const arr = grouped[brand].slice().reverse(); // terbaru dulu
+  let found = arr.find(x=> x.followers>0 || x.reach>0 || x.engagement>0);
+  if(!found) found = arr[0]; // kalau semua 0, ambil yang terbaru aja
+  if(found) latest[brand]=found;
+ });
+
  const latestArr=Object.values(latest);
- document.getElementById('kpiFollowers').textContent=formatNum(latestArr.reduce((s,r)=>s+r.followers,0));
- document.getElementById('kpiReach').textContent=formatNum(latestArr.reduce((s,r)=>s+r.reach,0));
- document.getElementById('kpiEng').textContent=formatNum(latestArr.reduce((s,r)=>s+r.engagement,0));
+ 
+ const totalFollowers = latestArr.reduce((s,r)=>s+r.followers,0);
+ const totalReach = latestArr.reduce((s,r)=>s+r.reach,0);
+ const totalEng = latestArr.reduce((s,r)=>s+r.engagement,0);
+
+ document.getElementById('kpiFollowers').textContent=formatNum(totalFollowers);
+ document.getElementById('kpiReach').textContent=formatNum(totalReach);
+ document.getElementById('kpiEng').textContent=formatNum(totalEng);
  document.getElementById('kpiPosts').textContent=data.length;
+
  const byFollowers={}; latestArr.forEach(r=>byFollowers[r.brand]=r.followers);
  const byReach={}; latestArr.forEach(r=>byReach[r.brand]=r.reach);
+
  drawChart('chartBrand',Object.keys(byFollowers),Object.values(byFollowers));
  drawChart('chartReach',Object.keys(byReach),Object.values(byReach));
- document.getElementById('tableBody').innerHTML=data.slice().reverse().slice(0,100).map(r=>`
-  <tr><td>${r.waktu}</td><td>${r.brand}</td><td>${r.periode}</td><td>${r.reachRaw||r.reach}</td><td>${r.engRaw||r.engagement}</td><td>${r.follRaw||r.followers}</td></tr>
- `).join('');
+
+ document.getElementById('tableBody').innerHTML=data.slice().reverse().slice(0,100).map(r=>{
+  return `<tr>
+    <td>${r.waktu}</td>
+    <td>${r.brand}</td>
+    <td>${r.periode}</td>
+    <td>${r.reachRaw||0}</td>
+    <td>${r.engRaw||0}</td>
+    <td>${r.follRaw||0}</td>
+  </tr>`;
+ }).join('');
 }
+
 function drawChart(id,labels,data){
  if(charts[id]) charts[id].destroy();
  charts[id]=new Chart(document.getElementById(id),{
   type:'bar',
-  data:{labels,datasets:[{data,backgroundColor:'#4a9eff'}]},
+  data:{labels,datasets:[{label:'value',data,backgroundColor:'#4a9eff'}]},
   options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#888',maxRotation:45},grid:{color:'#333'}},y:{ticks:{color:'#888'},grid:{color:'#333'}}}}
  });
 }
+
 ['startDate','endDate','brandFilter'].forEach(id=>{document.getElementById(id).addEventListener('change',updateView);});
 loadData(); setInterval(loadData,60000);
 </script>
