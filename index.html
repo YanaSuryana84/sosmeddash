@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Sosmed</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, sans-serif; background: #0a0a0a; color: #fff; padding: 20px; }
+.container { max-width: 1400px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 8px; }
+.subtitle { color: #666; font-size: 14px; margin-bottom: 20px; }
+.filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+.filters select,.filters input { background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 8px 12px; border-radius: 6px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.kpi { background: #1a1a1a; padding: 20px; border-radius: 8px; border: 1px solid #333; }
+.kpi-label { font-size: 12px; color: #888; margin-bottom: 8px; }
+.kpi-value { font-size: 32px; font-weight: 700; }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.chart-box { background: #1a1a1a; padding: 20px; border-radius: 8px; border: 1px solid #333; }
+.chart-title { font-size: 14px; margin-bottom: 12px; color: #aaa; }
+  table { width: 100%; background: #1a1a1a; border-collapse: collapse; border-radius: 8px; overflow: hidden; }
+  th, td { padding: 12px; text-align: left; border-bottom: 1px solid #333; font-size: 14px; }
+  th { background: #222; color: #aaa; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Dashboard Sosmed</h1>
+  <div class="subtitle" id="status">Loading data dari Google Sheet...</div>
+
+  <div class="filters">
+    <input type="date" id="startDate">
+    <input type="date" id="endDate">
+    <select id="brandFilter"><option value="">Semua Brand</option></select>
+    <select id="platformFilter">
+      <option value="">Semua Platform</option>
+      <option value="ig">Instagram</option>
+      <option value="tt">TikTok</option>
+    </select>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="kpi-label">Total Followers</div><div class="kpi-value" id="kpiFollowers">0</div></div>
+    <div class="kpi"><div class="kpi-label">Total Reach</div><div class="kpi-value" id="kpiReach">0</div></div>
+    <div class="kpi"><div class="kpi-label">Avg ER</div><div class="kpi-value" id="kpiER">0%</div></div>
+    <div class="kpi"><div class="kpi-label">Total Posts</div><div class="kpi-value" id="kpiPosts">0</div></div>
+  </div>
+
+  <div class="charts">
+    <div class="chart-box"><div class="chart-title">Followers by Brand</div><canvas id="chartBrand"></canvas></div>
+    <div class="chart-box"><div class="chart-title">ER by Platform</div><canvas id="chartPlatform"></canvas></div>
+  </div>
+
+  <table>
+    <thead><tr>
+      <th>Tanggal</th><th>Brand</th><th>Platform</th><th>Followers</th>
+      <th>Reach</th><th>ER</th><th>Posts</th>
+    </tr></thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<script>
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAEUueYms0SnC-JXracRWmYLZ55VqptcgNGGpAWpnMqIQU7oFhd8KWO4ZXr85ZzOLvfBQX0I9aLEHr/pub?gid=269503424&single=true&output=csv';
+
+let allData = [];
+let charts = {};
+
+const toNum = v => parseInt(String(v).replace(/[^\d]/g, '')) || 0;
+const formatNum = n => n >= 1e6? (n/1e6).toFixed(1)+'M' : n >= 1e3? (n/1e3).toFixed(1)+'K' : n.toLocaleString('id-ID');
+
+async function loadData() {
+  try {
+    const res = await fetch(CSV_URL);
+    const csv = await res.text();
+    const parsed = Papa.parse(csv, { header: true, skipEmptyLines: true });
+
+    // SESUAIIN NAMA KOLOM SAMA HEADER DI SHEET KAMU
+    allData = parsed.data.map(r => ({
+      date: r['Tanggal'] || r['tanggal'] || r['Date'] || '',
+      brand: (r['Brand'] || r['brand'] || '').toLowerCase(),
+      platform: (r['Platform'] || r['platform'] || '').toLowerCase(),
+      followers: toNum(r['Followers'] || r['followers']),
+      likes: toNum(r['Likes'] || r['likes']),
+      comments: toNum(r['Comments'] || r['comments']),
+      shares: toNum(r['Shares'] || r['shares']),
+      reach: toNum(r['Reach'] || r['reach']),
+      posts: toNum(r['Posts'] || r['posts']) || 1,
+      er: parseFloat(r['ER'] || r['Engagement Rate'] || 0)
+    })).filter(r => r.date && r.brand);
+
+    allData.forEach(r => {
+      if (!r.er && r.followers > 0) r.er = ((r.likes + r.comments + r.shares) / r.followers * 100);
+    });
+
+    updateBrands();
+    updateView();
+    document.getElementById('status').textContent = `Data update: ${new Date().toLocaleString('id-ID')} | ${allData.length} baris`;
+  } catch(e) {
+    document.getElementById('status').textContent = 'Error: ' + e;
+  }
+}
+
+function updateBrands() {
+  const brands = [...new Set(allData.map(r => r.brand))].sort();
+  document.getElementById('brandFilter').innerHTML = '<option value="">Semua Brand</option>' +
+    brands.map(b => `<option value="${b}">${b.toUpperCase()}</option>`).join('');
+}
+
+function getFiltered() {
+  const sDate = document.getElementById('startDate').value;
+  const eDate = document.getElementById('endDate').value;
+  const brand = document.getElementById('brandFilter').value;
+  const plat = document.getElementById('platformFilter').value;
+  return allData.filter(r =>
+    (!sDate || r.date >= sDate) &&
+    (!eDate || r.date <= eDate) &&
+    (!brand || r.brand === brand) &&
+    (!plat || r.platform === plat)
+  );
+}
+
+function updateView() {
+  const data = getFiltered();
+  const latest = {};
+  data.forEach(r => {
+    const key = r.brand + r.platform;
+    if (!latest[key] || r.date > latest[key].date) latest[key] = r;
+  });
+  const latestArr = Object.values(latest);
+
+  document.getElementById('kpiFollowers').textContent = formatNum(latestArr.reduce((s,r) => s + r.followers, 0));
+  document.getElementById('kpiReach').textContent = formatNum(data.reduce((s,r) => s + r.reach, 0));
+  document.getElementById('kpiER').textContent = (latestArr.reduce((s,r) => s + r.er, 0) / (latestArr.length || 1)).toFixed(2) + '%';
+  document.getElementById('kpiPosts').textContent = data.reduce((s,r) => s + r.posts, 0);
+
+  const byBrand = {};
+  latestArr.forEach(r => byBrand[r.brand] = (byBrand[r.brand] || 0) + r.followers);
+  const byPlatform = {};
+  latestArr.forEach(r => {
+    if (!byPlatform[r.platform]) byPlatform[r.platform] = [];
+    byPlatform[r.platform].push(r.er);
+  });
+  Object.keys(byPlatform).forEach(p => byPlatform[p] = byPlatform[p].reduce((a,b) => a+b, 0) / byPlatform[p].length);
+
+  drawChart('chartBrand', Object.keys(byBrand), Object.values(byBrand));
+  drawChart('chartPlatform', Object.keys(byPlatform).map(p => p.toUpperCase()), Object.values(byPlatform));
+
+  document.getElementById('tableBody').innerHTML = data.slice(-50).reverse().map(r => `
+    <tr>
+      <td>${r.date}</td><td>${r.brand.toUpperCase()}</td><td>${r.platform.toUpperCase()}</td>
+      <td>${formatNum(r.followers)}</td><td>${formatNum(r.reach)}</td><td>${r.er.toFixed(2)}%</td><td>${r.posts}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:#666">No data</td></tr>';
+}
+
+function drawChart(id, labels, data) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: { labels, datasets: [{ data, backgroundColor: '#4a9eff' }] },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#888' }, grid: { color: '#333' } },
+        y: { ticks: { color: '#888' }, grid: { color: '#333' } }
+      }
+    }
+  });
+}
+
+['startDate','endDate','brandFilter','platformFilter'].forEach(id => {
+  document.getElementById(id).addEventListener('change', updateView);
+});
+
+loadData();
+setInterval(loadData, 60000); // Auto refresh tiap 1 menit
+</script>
+</body>
+</html>
